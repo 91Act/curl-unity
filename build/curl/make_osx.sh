@@ -1,3 +1,4 @@
+PWD=`pwd`
 CURL_VERSION=curl-7.64.0
 
 if [ ! -d $CURL_VERSION ]; then    
@@ -6,11 +7,10 @@ fi
 
 do_make()
 {
-    PROJ_ROOT=`pwd`
-    BUILD_DIR=$PROJ_ROOT/build/osx
-    PREBUILT_DIR=$PROJ_ROOT/prebuilt/osx
-    OPENSSL_ROOT=$PROJ_ROOT/../openssl/prebuilt/osx
-    NGHTTP2_ROOT=$PROJ_ROOT/../nghttp2/prebuilt/osx
+    BUILD_DIR=$PWD/build/osx
+    PREBUILT_DIR=$PWD/prebuilt/osx
+    OPENSSL_ROOT=$PWD/../openssl/prebuilt/osx
+    NGHTTP2_ROOT=$PWD/../nghttp2/prebuilt/osx
 
     (
         cd $CURL_VERSION

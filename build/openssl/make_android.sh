@@ -34,10 +34,10 @@ do_make()
 
     PREBUILT_DIR=$PREBUILT_DIR_ROOT/$ABI
 
-    PATH=$ANDROID_NDK_HOME/toolchains/$TOOLCHAIN/prebuilt/darwin-x86_64/bin:$PATH
-
     (
         cd $OPENSSL_ROOT
+
+        PATH=$ANDROID_NDK_HOME/toolchains/$TOOLCHAIN/prebuilt/darwin-x86_64/bin:$PATH
 
         ./Configure $CONF_ARCH --prefix=$PREBUILT_DIR -D__ANDROID_API__=27 no-asm no-shared no-unit-test
 

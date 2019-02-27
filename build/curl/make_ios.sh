@@ -1,3 +1,4 @@
+PWD=`pwd`
 CURL_VERSION=curl-7.64.0
 
 if [ ! -d $CURL_VERSION ]; then    
@@ -6,11 +7,10 @@ fi
 
 do_make()
 {
-    PROJ_ROOT=`pwd`
-    BUILD_DIR=$PROJ_ROOT/build/ios
-    PREBUILT_DIR=$PROJ_ROOT/prebuilt/ios
-    OPENSSL_ROOT=$PROJ_ROOT/../openssl/prebuilt/ios
-    NGHTTP2_ROOT=$PROJ_ROOT/../nghttp2/prebuilt/ios
+    BUILD_DIR=$PWD/build/ios
+    PREBUILT_DIR=$PWD/prebuilt/ios
+    OPENSSL_ROOT=$PWD/../openssl/prebuilt/ios
+    NGHTTP2_ROOT=$PWD/../nghttp2/prebuilt/ios
 
     XCODE=`xcode-select --print-path`
     SDK_ROOT="${XCODE}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
