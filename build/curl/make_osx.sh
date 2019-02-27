@@ -1,4 +1,4 @@
-CURL_VERSION=curl-7.61.0
+CURL_VERSION=curl-7.64.0
 
 if [ ! -d $CURL_VERSION ]; then    
     tar xzf ${CURL_VERSION}.tar.gz
@@ -8,19 +8,43 @@ do_make()
 {
     PROJ_ROOT=`pwd`
     BUILD_DIR=$PROJ_ROOT/build/osx
-    OPENSSL_ROOT=$PROJ_ROOT/openssl/prebuilt
+    PREBUILT_DIR=$PROJ_ROOT/prebuilt/osx
+    OPENSSL_ROOT=$PROJ_ROOT/../openssl/prebuilt/osx
+    NGHTTP2_ROOT=$PROJ_ROOT/../nghttp2/prebuilt/osx
+    export PKG_CONFIG_PATH=$NGHTTP2_ROOT:$PKG_CONFIG_PATH
+    
+    # (
+    #     cd $CURL_VERSION
+    #     ./configure \
+    #         --host=i686-apple-darwin \
+    #         --prefix=$BUILD_DIR \
+    #         --with-ssl=$OPENSSL_ROOT \
+    #         -with-nghttp2 \
+    #         --enable-ipv6 \
+    #         --disable-ftp \
+    #         --disable-file \
+    #         --disable-ldap \
+    #         --disable-ldaps \
+    #         --disable-rtsp \
+    #         --disable-proxy \
+    #         --disable-dict \
+    #         --disable-telnet \
+    #         --disable-tftp \
+    #         --disable-pop3 \
+    #         --disable-imap \
+    #         --disable-smb \
+    #         --disable-smtp \
+    #         --disable-gopher \
+    #         --disable-manual \
+    #         --disable-shared
 
-    export CFLAGS="-I${OPENSSL_ROOT}/osx/include -I${OPENSSL_ROOT}/include"
-    export LDFLAGS="-L${OPENSSL_ROOT}/osx/lib"
+    #     make clean
+    #     make -j8
+    #     make install
+    # )
 
-    cd $CURL_VERSION
-    ./configure --host=i686-apple-darwin --prefix=$BUILD_DIR --with-ssl --enable-ipv6 --disable-shared
-
-    make clean
-    make -j8
-    make install
-
-    cd -
+    mkdir -p $PREBUILT_DIR
+    cp -r $BUILD_DIR/* $PREBUILT_DIR
 }
 
 do_make
