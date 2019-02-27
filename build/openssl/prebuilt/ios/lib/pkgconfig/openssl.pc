@@ -1,4 +1,4 @@
-prefix=/Users/jayyang/work/unity-curl/build/openssl/build/ios
+prefix=/Users/jayyang/work/unity-curl/build/openssl/prebuilt/ios
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
