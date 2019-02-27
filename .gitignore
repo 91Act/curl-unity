@@ -1,4 +1,6 @@
-**/prebuilt/*/share
+**/prebuilt/**/share
+**/*.DS_Store
 **/*.o
 **/*.d
 **/*.lo
+build/**/build

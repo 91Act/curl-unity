@@ -45,8 +45,9 @@ do_make()
     (
         cd $CURL_VERSION
 
-        export PATH=$STANDALONE_TOOLCHAIN/bin:$PATH
-        # export PATH=$ANDROID_NDK_HOME/toolchains/$TOOLCHAIN/prebuilt/darwin-x86_64/bin:$PATH
+        PATH=$STANDALONE_TOOLCHAIN/bin:$PATH
+        export CFLAGS="-fPIE"
+        export LDFLAGS="-pie"
 
         ./configure \
             --host=$TOOLCHAIN \
@@ -77,6 +78,6 @@ do_make()
     )
 }
 
-# do_make arm
-# do_make arm64
+do_make arm
+do_make arm64
 do_make x86

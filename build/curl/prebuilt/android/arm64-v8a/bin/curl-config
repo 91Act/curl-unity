@@ -172,7 +172,7 @@ while test $# -gt 0; do
 
     --static-libs)
         if test "Xyes" != "Xno" ; then
-          echo ${exec_prefix}/lib/libcurl.a -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/arm64-v8a/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/arm64-v8a/lib -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
+          echo ${exec_prefix}/lib/libcurl.a -pie -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/arm64-v8a/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/arm64-v8a/lib -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
         else
           echo "curl was built with static libraries disabled" >&2
           exit 1
@@ -180,7 +180,7 @@ while test $# -gt 0; do
         ;;
 
     --configure)
-        echo " '--host=aarch64-linux-android' '--target=aarch64-linux-android' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/android/arm64-v8a' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/android/arm64-v8a' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/android/arm64-v8a' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=aarch64-linux-android' 'target_alias=aarch64-linux-android'"
+        echo " '--host=aarch64-linux-android' '--target=aarch64-linux-android' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/android/arm64-v8a' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/android/arm64-v8a' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/android/arm64-v8a' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=aarch64-linux-android' 'target_alias=aarch64-linux-android' 'CFLAGS=-fPIE' 'LDFLAGS=-pie'"
         ;;
 
     *)

@@ -14,7 +14,7 @@ do_make()
 
     XCODE=`xcode-select --print-path`
     SDK_ROOT="${XCODE}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
-    SDK_VERSION=12.0
+    SDK_VERSION=12.1
 
     export CC="${XCODE}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
     export CFLAGS="-arch arm64 -pipe -Os -gdwarf-2 -isysroot ${SDK_ROOT} -miphoneos-version-min=${SDK_VERSION}"    

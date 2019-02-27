@@ -316,9 +316,9 @@ AWK = awk
 BLANK_AT_MAKETIME = 
 CC = i686-linux-android-gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -Werror-implicit-function-declaration -O2 -Wno-system-headers
+CFLAGS = -fPIE -Werror-implicit-function-declaration -O2 -Wno-system-headers
 CFLAG_CURL_SYMBOL_HIDING = -fvisibility=hidden
-CONFIGURE_OPTIONS = " '--host=i686-linux-android' '--target=i686-linux-android' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/android/x86' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/android/x86' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/android/x86' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=i686-linux-android' 'target_alias=i686-linux-android'"
+CONFIGURE_OPTIONS = " '--host=i686-linux-android' '--target=i686-linux-android' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/android/x86' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/android/x86' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/android/x86' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=i686-linux-android' 'target_alias=i686-linux-android' 'CFLAGS=-fPIE' 'LDFLAGS=-pie'"
 CPP = i686-linux-android-gcc -E
 CPPFLAGS = -I/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/x86/include -I/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/x86/include
 CPPFLAG_CURL_STATICLIB = -DCURL_STATICLIB
@@ -375,7 +375,7 @@ INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 IPV6_ENABLED = 1
 LCOV = 
 LD = /Users/jayyang/work/unity-curl/build/curl/build/android/toolchains/i686-linux-android/i686-linux-android/bin/ld
-LDFLAGS = -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/x86/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/x86/lib
+LDFLAGS = -pie -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/x86/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/x86/lib
 LIBCURL_LIBS = -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
 LIBMETALINK_CPPFLAGS = 
 LIBMETALINK_LDFLAGS = 
