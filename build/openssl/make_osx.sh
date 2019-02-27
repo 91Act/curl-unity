@@ -1,4 +1,4 @@
-OPEN_SSL_VERSION=openssl-OpenSSL_1_1_1b
+OPEN_SSL_VERSION=openssl-1.1.1b
 
 if [ ! -d $OPEN_SSL_VERSION ]; then    
     tar xzf ${OPEN_SSL_VERSION}.tar.gz
