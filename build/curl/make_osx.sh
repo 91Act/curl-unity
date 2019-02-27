@@ -11,6 +11,7 @@ do_make()
     PREBUILT_DIR=$PROJ_ROOT/prebuilt/osx
     OPENSSL_ROOT=$PROJ_ROOT/../openssl/prebuilt/osx
     NGHTTP2_ROOT=$PROJ_ROOT/../nghttp2/prebuilt/osx
+
     export PKG_CONFIG_PATH=$NGHTTP2_ROOT:$PKG_CONFIG_PATH
     
     (
@@ -19,7 +20,7 @@ do_make()
             --host=i686-apple-darwin \
             --prefix=$BUILD_DIR \
             --with-ssl=$OPENSSL_ROOT \
-            -with-nghttp2 \
+            --with-nghttp2 \
             --enable-ipv6 \
             --disable-ftp \
             --disable-file \
@@ -39,8 +40,7 @@ do_make()
             --disable-shared
 
         make clean
-        make -j8
-        make install
+        make install -j8
     )
 
     mkdir -p $PREBUILT_DIR
