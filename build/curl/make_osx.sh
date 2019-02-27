@@ -12,16 +12,13 @@ do_make()
     OPENSSL_ROOT=$PROJ_ROOT/../openssl/prebuilt/osx
     NGHTTP2_ROOT=$PROJ_ROOT/../nghttp2/prebuilt/osx
 
-    export PKG_CONFIG_PATH=$OPENSSL_ROOT:$NGHTTP2_ROOT:$PKG_CONFIG_PATH
-    pkg-config libopenssl
-    exit
     (
         cd $CURL_VERSION
         ./configure \
             --host=i686-apple-darwin \
             --prefix=$BUILD_DIR \
-            --with-ssl \
-            --with-nghttp2 \
+            --with-ssl=$OPENSSL_ROOT \
+            --with-nghttp2=$NGHTTP2_ROOT \
             --enable-ipv6 \
             --disable-ftp \
             --disable-file \

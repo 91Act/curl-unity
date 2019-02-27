@@ -17,7 +17,7 @@ old_library='libcurl.a'
 inherited_linker_flags=' '
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/Users/jayyang/work/unity-curl/build/openssl/build/osx/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/osx/lib -lnghttp2 -lssl -lcrypto -lz'
+dependency_libs=' -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/osx/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/osx/lib -lnghttp2 -lssl -lcrypto -lz'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''

@@ -1,0 +1,4 @@
+**/prebuilt/*/share
+**/*.o
+**/*.d
+**/*.lo

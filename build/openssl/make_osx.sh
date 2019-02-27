@@ -6,7 +6,6 @@ fi
 
 do_make()
 {
-    # BUILD_DIR=`pwd`/build/osx
     PREBUILT_DIR=`pwd`/prebuilt/osx
     (
         cd $OPEN_SSL_VERSION
@@ -15,10 +14,6 @@ do_make()
         make clean
         make install_dev -j8
     )
-
-    mkdir -p $PREBUILT_DIR
-    # cp -r $BUILD_DIR/include $PREBUILT_DIR
-    # cp -r $BUILD_DIR/lib $PREBUILT_DIR
 }
 
 do_make
