@@ -1,5 +1,5 @@
-set BUILD_DIR=%CD%\build\x86_64
-set PREBUILT_DIR=%CD%\prebuilt\x86_64
+set BUILD_DIR=%CD%\build\win
+set PREBUILT_DIR=%CD%\prebuilt\win
 set OPENSSL_ROOT=openssl-1.1.1b
 
 mkdir %BUILD_DIR%

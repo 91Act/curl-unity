@@ -1,41 +1,51 @@
-OPEN_SSL_VERSION=openssl-1.1.0h
+PWD=`pwd`
+OPENSSL_VERSION=openssl-1.1.1b
+OPENSSL_ROOT=$PWD/$OPENSSL_VERSION
+PREBUILT_DIR_ROOT=$PWD/prebuilt/android
 
-if [ ! -d $OPEN_SSL_VERSION ]; then    
-    tar xzf ${OPEN_SSL_VERSION}.tar.gz
+export ANDROID_NDK_HOME=/usr/local/android-ndk-r16b
+
+if [ ! -d $OPENSSL_ROOT ]; then    
+    tar xzf ${OPENSSL_ROOT}.tar.gz
 fi
 
 do_make()
 {
-    CONF=$1
-    ARCH=$2
-    TOOL=$3
-    NDK_TOOLCHAIN=$4
+    case $1 in
+    arm)
+        CONF_ARCH=android-arm
+        ABI=armeabi-v7a
+        TOOLCHAIN=arm-linux-androideabi-4.9
+    ;;
+    arm64)
+        CONF_ARCH=android-arm64
+        ABI=arm64-v8a
+        TOOLCHAIN=aarch64-linux-android-4.9
+    ;;
+    x86)
+        CONF_ARCH=android-x86
+        ABI=x86
+        TOOLCHAIN=x86-4.9
+    ;;
+    *)
+    exit
+    ;;
+    esac
 
-    BUILD_DIR=`pwd`/build/android/$ARCH
+    PREBUILT_DIR=$PREBUILT_DIR_ROOT/$ABI
 
-    mkdir -p $BUILD_DIR
+    PATH=$ANDROID_NDK_HOME/toolchains/$TOOLCHAIN/prebuilt/darwin-x86_64/bin:$PATH
 
-    TOOLCHAIN=$BUILD_DIR/toolchain
+    (
+        cd $OPENSSL_ROOT
 
-    if [ ! -d $TOOLCHAIN ]; then
-        $ANDROID_NDK_ROOT/build/tools/make-standalone-toolchain.sh --arch=$ARCH --platform=android-21 --toolchain=$NDK_TOOLCHAIN --install-dir=$TOOLCHAIN
-    fi
+        ./Configure $CONF_ARCH --prefix=$PREBUILT_DIR -D__ANDROID_API__=27 no-asm no-shared no-unit-test
 
-    export CROSS_SYSROOT=$TOOLCHAIN/sysroot
-    export CC=$TOOLCHAIN/bin/${TOOL}-gcc
-    export LD=$TOOLCHAIN/bin/${TOOL}-ld
-    export AR=$TOOLCHAIN/bin/${TOOL}-ar
-    export RANLIB=$TOOLCHAIN/bin/${TOOL}-ranlib    
-
-    cd $OPEN_SSL_VERSION
-
-    ./Configure $CONF -D__ARM_MAX_ARCH__=7 --prefix=$BUILD_DIR no-asm no-shared no-unit-test
-
-    make clean
-    make -j8
-    make install_sw
-    cd -
+        make clean
+        make install_dev -j8
+    )
 }
 
-do_make android-armeabi arm arm-linux-androideabi arm-linux-androideabi-4.8
-do_make android-x86 x86 i686-linux-android x86-4.8
+do_make arm
+do_make arm64
+do_make x86

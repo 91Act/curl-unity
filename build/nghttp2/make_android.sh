@@ -5,7 +5,7 @@ PREBUILT_DIR_ROOT=$PWD/prebuilt/android
 
 export ANROID_NDK=/usr/local/android-ndk-r16b
 
-function domake()
+function do_make()
 {
     arch=$1
     toolchain=$2
@@ -29,6 +29,6 @@ function domake()
     cmake --build $BUILD_DIR --config Release --target install
 }
 
-domake armeabi-v7a arm-linux-androideabi-4.9
-domake arm64-v8a arm-linux-androideabi-4.9
-domake x86 x86-4.9
+do_make armeabi-v7a arm-linux-androideabi-4.9
+do_make arm64-v8a arm-linux-androideabi-4.9
+do_make x86 x86-4.9

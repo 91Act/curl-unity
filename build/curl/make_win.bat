@@ -1,13 +1,13 @@
 set PROJ_ROOT=%CD%
-set BUILD_DIR=%PROJ_ROOT%\build\x86_64
+set BUILD_DIR=%PROJ_ROOT%\build\win
 set CURL_ROOT=curl-7.64.0
-set NGHTTP2_ROOT=%PROJ_ROOT%\..\nghttp2\prebuilt\x86_64
+set NGHTTP2_ROOT=%PROJ_ROOT%\..\nghttp2\prebuilt\win
 
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 pushd %CURL_ROOT%\winbuild
 set CL=/MP
-nmake /f Makefile.vc mode=static VC=15 ENABLE_IPV6=yes MACHINE=x64 WITH_NGHTTP2=static NGHTTP2_PATH=%NGHTTP2_ROOT% WITH_SSL=static SSL_PATH=%PROJ_ROOT%\..\openssl\build\x86_64
+nmake /f Makefile.vc mode=static VC=15 ENABLE_IPV6=yes MACHINE=x64 WITH_NGHTTP2=static NGHTTP2_PATH=%NGHTTP2_ROOT% WITH_SSL=static SSL_PATH=%PROJ_ROOT%\..\openssl\build\win
 popd
 
 mkdir %BUILD_DIR%

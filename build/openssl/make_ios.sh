@@ -16,7 +16,6 @@ do_make()
         cd $OPEN_SSL_VERSION
         ./Configure ios64-cross --prefix=$PREBUILT_DIR no-shared no-dso no-hw no-engine
         make clean
-        make build_libs
         make install_dev -j8
     )
     
