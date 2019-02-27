@@ -13,12 +13,12 @@ do_make()
         ./Configure darwin64-x86_64-cc --prefix=$BUILD_DIR no-asm no-shared no-unit-test
 
         make clean
-        make build_libs_nodep -j8
-        make install_dev
+        make install_dev -j8
     )
 
     mkdir -p $PREBUILT_DIR
-    cp -r $BUILD_DIR/* $PREBUILT_DIR
+    cp -r $BUILD_DIR/include $PREBUILT_DIR
+    cp -r $BUILD_DIR/lib $PREBUILT_DIR
 }
 
 do_make
