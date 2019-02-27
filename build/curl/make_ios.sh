@@ -12,7 +12,7 @@ do_make()
     OPENSSL_ROOT=$PROJ_ROOT/../openssl/prebuilt/ios
     NGHTTP2_ROOT=$PROJ_ROOT/../nghttp2/prebuilt/ios
 
-    XCODE="/Applications/Xcode.app/Contents/Developer"
+    XCODE=`xcode-select --print-path`
     SDK_ROOT="${XCODE}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
     SDK_VERSION=12.0
 
