@@ -17,16 +17,15 @@ do_make()
     SDK_VERSION=12.0
 
     export CC="${XCODE}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
-    export CFLAGS="-DCURL_BUILD_IOS -arch arm64 -isysroot ${SDK_ROOT} -miphoneos-version-min=${SDK_VERSION}"
-    export PKG_CONFIG_PATH=$NGHTTP2_ROOT:$PKG_CONFIG_PATH
+    export CFLAGS="-arch arm64 -pipe -Os -gdwarf-2 -isysroot ${SDK_ROOT} -miphoneos-version-min=${SDK_VERSION}"    
     
     (
         cd $CURL_VERSION
         ./configure \
             --host=arm-apple-darwin \
-            --prefix=$BUILD_DIR \
+            --prefix=$PREBUILT_DIR \
             --with-ssl=$OPENSSL_ROOT \
-            --with-nghttp2 \
+            --with-nghttp2=$NGHTTP2_ROOT \
             --enable-ipv6 \
             --disable-ftp \
             --disable-file \
@@ -48,9 +47,6 @@ do_make()
         make clean
         make install -j8
     )
-
-    # mkdir -p $PREBUILT_DIR
-    # cp -r $BUILD_DIR/* $PREBUILT_DIR
 }
 
 do_make

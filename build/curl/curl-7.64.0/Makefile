@@ -141,7 +141,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-apple-darwin18.0.0
-host_triplet = i686-apple-darwin
+host_triplet = arm-apple-darwin
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
@@ -314,16 +314,16 @@ AUTOHEADER = ${SHELL} /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0/miss
 AUTOMAKE = ${SHELL} /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0/missing automake-1.16
 AWK = awk
 BLANK_AT_MAKETIME = 
-CC = gcc
+CC = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
 CCDEPMODE = depmode=gcc3
-CFLAGS = -Qunused-arguments -Os -mmacosx-version-min=10.8 -Werror=partial-availability
+CFLAGS = -arch arm64 -pipe -Os -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk -miphoneos-version-min=12.0 -Qunused-arguments -Werror=partial-availability
 CFLAG_CURL_SYMBOL_HIDING = -fvisibility=hidden
-CONFIGURE_OPTIONS = " '--host=i686-apple-darwin' '--prefix=/Users/jayyang/work/unity-curl/build/curl/build/osx' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/osx' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/osx' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=i686-apple-darwin'"
-CPP = gcc -E
-CPPFLAGS = -I/Users/jayyang/work/unity-curl/build/openssl/prebuilt/osx/include -I/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/osx/include
+CONFIGURE_OPTIONS = " '--host=arm-apple-darwin' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/ios' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/ios' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/ios' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=arm-apple-darwin' 'CC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang' 'CFLAGS=-arch arm64 -pipe -Os -gdwarf-2 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk -miphoneos-version-min=12.0'"
+CPP = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -E
+CPPFLAGS = -I/Users/jayyang/work/unity-curl/build/openssl/prebuilt/ios/include -I/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/ios/include
 CPPFLAG_CURL_STATICLIB = -DCURL_STATICLIB
 CURLVERSION = 7.64.0
-CURL_CA_BUNDLE = "/etc/ssl/cert.pem"
+CURL_CA_BUNDLE = 
 CURL_CFLAG_EXTRAS = 
 CURL_DISABLE_DICT = 1
 CURL_DISABLE_FILE = 1
@@ -375,7 +375,7 @@ INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 IPV6_ENABLED = 1
 LCOV = 
 LD = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld
-LDFLAGS = -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/osx/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/osx/lib
+LDFLAGS = -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/ios/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/ios/lib
 LIBCURL_LIBS = -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
 LIBMETALINK_CPPFLAGS = 
 LIBMETALINK_LDFLAGS = 
@@ -413,7 +413,7 @@ PKGADD_NAME = curl - a client that groks URLs
 PKGADD_PKG = HAXXcurl
 PKGADD_VENDOR = curl.haxx.se
 PKGCONFIG = /usr/local/bin/pkg-config
-RANDOM_FILE = /dev/urandom
+RANDOM_FILE = 
 RANLIB = ranlib
 REQUIRE_LIB_DEPS = yes
 SED = /usr/bin/sed
@@ -451,7 +451,7 @@ abs_srcdir = /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0
 abs_top_builddir = /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0
 abs_top_srcdir = /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0
 ac_ct_AR = 
-ac_ct_CC = gcc
+ac_ct_CC = 
 ac_ct_DUMPBIN = link -dump
 am__include = include
 am__leading_dot = .
@@ -470,9 +470,9 @@ datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = i686-apple-darwin
-host_alias = i686-apple-darwin
-host_cpu = i686
+host = arm-apple-darwin
+host_alias = arm-apple-darwin
+host_cpu = arm
 host_os = darwin
 host_vendor = apple
 htmldir = ${docdir}
@@ -488,7 +488,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /Users/jayyang/work/unity-curl/build/curl/build/osx
+prefix = /Users/jayyang/work/unity-curl/build/curl/prebuilt/ios
 program_transform_name = s,x,x,
 psdir = ${docdir}
 runstatedir = ${localstatedir}/run
@@ -1361,29 +1361,29 @@ pdf:
 
 check: test examples check-docs
 
-#test-full: test
-#test-torture: test
-
-#test:
-#	@echo "NOTICE: we can't run the tests when cross-compiling!"
+test-full: test
+test-torture: test
 
 test:
-	@(cd tests; $(MAKE) all quiet-test)
+	@echo "NOTICE: we can't run the tests when cross-compiling!"
 
-test-full:
-	@(cd tests; $(MAKE) all full-test)
+#test:
+#	@(cd tests; $(MAKE) all quiet-test)
 
-test-nonflaky:
-	@(cd tests; $(MAKE) all nonflaky-test)
+#test-full:
+#	@(cd tests; $(MAKE) all full-test)
 
-test-torture:
-	@(cd tests; $(MAKE) all torture-test)
+#test-nonflaky:
+#	@(cd tests; $(MAKE) all nonflaky-test)
 
-test-event:
-	@(cd tests; $(MAKE) all event-test)
+#test-torture:
+#	@(cd tests; $(MAKE) all torture-test)
 
-test-am:
-	@(cd tests; $(MAKE) all am-test)
+#test-event:
+#	@(cd tests; $(MAKE) all event-test)
+
+#test-am:
+#	@(cd tests; $(MAKE) all am-test)
 
 examples:
 	@(cd docs/examples; $(MAKE) check)
