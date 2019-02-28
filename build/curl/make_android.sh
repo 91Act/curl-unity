@@ -71,7 +71,7 @@ do_make()
             --disable-smtp \
             --disable-gopher \
             --disable-manual \
-            --disable-shared
+            --disable-static
 
         make clean
         make install -j8

@@ -318,10 +318,10 @@ CC = i686-linux-android-gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -fPIE -Werror-implicit-function-declaration -O2 -Wno-system-headers
 CFLAG_CURL_SYMBOL_HIDING = -fvisibility=hidden
-CONFIGURE_OPTIONS = " '--host=i686-linux-android' '--target=i686-linux-android' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/android/x86' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/android/x86' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/android/x86' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=i686-linux-android' 'target_alias=i686-linux-android' 'CFLAGS=-fPIE' 'LDFLAGS=-pie'"
+CONFIGURE_OPTIONS = " '--host=i686-linux-android' '--target=i686-linux-android' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/android/x86' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/android/x86' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/android/x86' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-static' 'host_alias=i686-linux-android' 'target_alias=i686-linux-android' 'CFLAGS=-fPIE' 'LDFLAGS=-pie'"
 CPP = i686-linux-android-gcc -E
 CPPFLAGS = -I/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/x86/include -I/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/x86/include
-CPPFLAG_CURL_STATICLIB = -DCURL_STATICLIB
+CPPFLAG_CURL_STATICLIB = 
 CURLVERSION = 7.64.0
 CURL_CA_BUNDLE = 
 CURL_CFLAG_EXTRAS = 
@@ -355,8 +355,8 @@ ECHO_C = \c
 ECHO_N = 
 ECHO_T = 
 EGREP = /usr/bin/grep -E
-ENABLE_SHARED = no
-ENABLE_STATIC = yes
+ENABLE_SHARED = yes
+ENABLE_STATIC = no
 EXEEXT = 
 FGREP = /usr/bin/grep -F
 GCOV = 
@@ -415,7 +415,7 @@ PKGADD_VENDOR = curl.haxx.se
 PKGCONFIG = /usr/local/bin/pkg-config
 RANDOM_FILE = 
 RANLIB = i686-linux-android-ranlib
-REQUIRE_LIB_DEPS = yes
+REQUIRE_LIB_DEPS = no
 SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh

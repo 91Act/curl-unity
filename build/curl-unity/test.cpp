@@ -31,24 +31,29 @@ struct MemoryStream
     }
 };
 
+void DoRequest(const char* url)
+{
+    CURL* handle = NULL;
+    handle = curl_easy_init();
+    MemoryStream stream = {0};
+    curl_easy_setopt(handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+    curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
+    curl_easy_setopt(handle, CURLOPT_URL, url);
+    curl_easy_setopt(handle, CURLOPT_HEADER, 1);
+    curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, &MemoryStream::WriteCallback); 
+    curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&stream);
+    curl_easy_perform(handle);
+
+    printf("%s", stream.pBuffer);
+}
+
 int main(int argc, char* argv[])
 {
     for(int i = 1; i < argc; i++)
     {
-        CURL* handle = NULL;
-        handle = curl_easy_init();
-        MemoryStream stream = {0};
-        curl_easy_setopt(handle, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
-        curl_easy_setopt(handle, CURLOPT_VERBOSE, 1);
-        curl_easy_setopt(handle, CURLOPT_URL, argv[i]);
-        curl_easy_setopt(handle, CURLOPT_HEADER, 1);
-        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, &MemoryStream::WriteCallback); 
-        curl_easy_setopt(handle, CURLOPT_WRITEDATA, (void*)&stream);
-        curl_easy_perform(handle);
-
-        printf("%s", stream.pBuffer);
+        DoRequest(argv[i]);
     }
 
     return 0;

@@ -49,8 +49,6 @@ else()
     add_library(${OUTPUT_LIB} SHARED ${SOURCES})
 endif()
 
-add_definitions("-DCURL_STATICLIB")
-
 target_link_libraries(${OUTPUT_LIB} ${LIBS})
 install(TARGETS ${PROJ} 
     LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}
