@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(PROJ_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-set(PROJ unity-curl)
+set(PROJ curl-unity)
 project(${PROJ})
 
 if (WIN32)
@@ -26,7 +26,7 @@ link_directories(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(SOURCES "unity-curl.cpp")
+set(SOURCES "curl-unity.cpp")
 if (WIN32)
     set(LIBS libcurl_a libssl libcrypto nghttp2 ws2_32 wldap32 crypt32)
 else()
