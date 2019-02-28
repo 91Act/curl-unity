@@ -141,7 +141,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-apple-darwin18.0.0
-host_triplet = i686-pc-linux-android
+host_triplet = i686-apple-darwin
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
@@ -306,7 +306,7 @@ distcleancheck_listfiles = find . -type f -print
 ACLOCAL = ${SHELL} /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0/missing aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
-AR = /Users/jayyang/work/unity-curl/build/curl/build/android/toolchains/i686-linux-android/bin/i686-linux-android-ar
+AR = /usr/bin/ar
 AR_FLAGS = cr
 AS = as
 AUTOCONF = ${SHELL} /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0/missing autoconf
@@ -314,16 +314,16 @@ AUTOHEADER = ${SHELL} /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0/miss
 AUTOMAKE = ${SHELL} /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0/missing automake-1.16
 AWK = awk
 BLANK_AT_MAKETIME = 
-CC = i686-linux-android-gcc
+CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -fPIE -Werror-implicit-function-declaration -O2 -Wno-system-headers
+CFLAGS = -Qunused-arguments -Os -mmacosx-version-min=10.8 -Werror=partial-availability
 CFLAG_CURL_SYMBOL_HIDING = -fvisibility=hidden
-CONFIGURE_OPTIONS = " '--host=i686-linux-android' '--target=i686-linux-android' '--prefix=/Users/jayyang/work/unity-curl/build/curl/prebuilt/android/x86' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/android/x86' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/android/x86' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-static' 'host_alias=i686-linux-android' 'target_alias=i686-linux-android' 'CFLAGS=-fPIE' 'LDFLAGS=-pie'"
-CPP = i686-linux-android-gcc -E
-CPPFLAGS = -I/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/x86/include -I/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/x86/include
+CONFIGURE_OPTIONS = " '--host=i686-apple-darwin' '--prefix=/Users/jayyang/work/unity-curl/build/curl/build/osx' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/osx' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/osx' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-static' 'host_alias=i686-apple-darwin'"
+CPP = gcc -E
+CPPFLAGS = -I/Users/jayyang/work/unity-curl/build/openssl/prebuilt/osx/include -I/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/osx/include
 CPPFLAG_CURL_STATICLIB = 
 CURLVERSION = 7.64.0
-CURL_CA_BUNDLE = 
+CURL_CA_BUNDLE = "/etc/ssl/cert.pem"
 CURL_CFLAG_EXTRAS = 
 CURL_DISABLE_DICT = 1
 CURL_DISABLE_FILE = 1
@@ -349,8 +349,8 @@ DEFAULT_SSL_BACKEND = no
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
 DLLTOOL = false
-DSYMUTIL = 
-DUMPBIN = 
+DSYMUTIL = dsymutil
+DUMPBIN = :
 ECHO_C = \c
 ECHO_N = 
 ECHO_T = 
@@ -374,8 +374,8 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 IPV6_ENABLED = 1
 LCOV = 
-LD = /Users/jayyang/work/unity-curl/build/curl/build/android/toolchains/i686-linux-android/i686-linux-android/bin/ld
-LDFLAGS = -pie -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/android/x86/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/android/x86/lib
+LD = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld
+LDFLAGS = -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/osx/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/osx/lib
 LIBCURL_LIBS = -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
 LIBMETALINK_CPPFLAGS = 
 LIBMETALINK_LDFLAGS = 
@@ -383,7 +383,7 @@ LIBMETALINK_LIBS =
 LIBOBJS = 
 LIBS = -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIPO = 
+LIPO = lipo
 LN_S = ln -s
 LTLIBOBJS = 
 LT_SYS_LIBRARY_PATH = 
@@ -392,14 +392,14 @@ MAKEINFO = ${SHELL} /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0/missin
 MANIFEST_TOOL = :
 MANOPT = -man
 MKDIR_P = ./install-sh -c -d
-NM = /Users/jayyang/work/unity-curl/build/curl/build/android/toolchains/i686-linux-android/bin/i686-linux-android-nm -B
-NMEDIT = 
+NM = nm
+NMEDIT = nmedit
 NROFF = /usr/bin/nroff
 NSS_LIBS = 
-OBJDUMP = i686-linux-android-objdump
+OBJDUMP = objdump
 OBJEXT = o
-OTOOL = 
-OTOOL64 = 
+OTOOL = otool
+OTOOL64 = :
 PACKAGE = curl
 PACKAGE_BUGREPORT = a suitable curl mailing list: https://curl.haxx.se/mail/
 PACKAGE_NAME = curl
@@ -413,16 +413,16 @@ PKGADD_NAME = curl - a client that groks URLs
 PKGADD_PKG = HAXXcurl
 PKGADD_VENDOR = curl.haxx.se
 PKGCONFIG = /usr/local/bin/pkg-config
-RANDOM_FILE = 
-RANLIB = i686-linux-android-ranlib
-REQUIRE_LIB_DEPS = no
+RANDOM_FILE = /dev/urandom
+RANLIB = ranlib
+REQUIRE_LIB_DEPS = yes
 SED = /usr/bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
 SSL_BACKENDS = OpenSSL
 SSL_ENABLED = 1
 SSL_LIBS = -lssl -lcrypto
-STRIP = i686-linux-android-strip
+STRIP = strip
 SUPPORT_FEATURES = SSL IPv6 UnixSockets libz AsynchDNS NTLM NTLM_WB TLS-SRP HTTP2 HTTPS-proxy
 SUPPORT_PROTOCOLS = HTTP HTTPS
 USE_ARES = 
@@ -451,8 +451,8 @@ abs_srcdir = /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0
 abs_top_builddir = /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0
 abs_top_srcdir = /Users/jayyang/work/unity-curl/build/curl/curl-7.64.0
 ac_ct_AR = 
-ac_ct_CC = 
-ac_ct_DUMPBIN = 
+ac_ct_CC = gcc
+ac_ct_DUMPBIN = link -dump
 am__include = include
 am__leading_dot = .
 am__quote = 
@@ -470,11 +470,11 @@ datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = i686-pc-linux-android
-host_alias = i686-linux-android
+host = i686-apple-darwin
+host_alias = i686-apple-darwin
 host_cpu = i686
-host_os = linux-android
-host_vendor = pc
+host_os = darwin
+host_vendor = apple
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
@@ -488,7 +488,7 @@ mandir = ${datarootdir}/man
 mkdir_p = $(MKDIR_P)
 oldincludedir = /usr/include
 pdfdir = ${docdir}
-prefix = /Users/jayyang/work/unity-curl/build/curl/prebuilt/android/x86
+prefix = /Users/jayyang/work/unity-curl/build/curl/build/osx
 program_transform_name = s,x,x,
 psdir = ${docdir}
 runstatedir = ${localstatedir}/run
@@ -497,7 +497,7 @@ sharedstatedir = ${prefix}/com
 srcdir = .
 subdirs = 
 sysconfdir = ${prefix}/etc
-target_alias = i686-linux-android
+target_alias = 
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
@@ -1361,29 +1361,29 @@ pdf:
 
 check: test examples check-docs
 
-test-full: test
-test-torture: test
-
-test:
-	@echo "NOTICE: we can't run the tests when cross-compiling!"
+#test-full: test
+#test-torture: test
 
 #test:
-#	@(cd tests; $(MAKE) all quiet-test)
+#	@echo "NOTICE: we can't run the tests when cross-compiling!"
 
-#test-full:
-#	@(cd tests; $(MAKE) all full-test)
+test:
+	@(cd tests; $(MAKE) all quiet-test)
 
-#test-nonflaky:
-#	@(cd tests; $(MAKE) all nonflaky-test)
+test-full:
+	@(cd tests; $(MAKE) all full-test)
 
-#test-torture:
-#	@(cd tests; $(MAKE) all torture-test)
+test-nonflaky:
+	@(cd tests; $(MAKE) all nonflaky-test)
 
-#test-event:
-#	@(cd tests; $(MAKE) all event-test)
+test-torture:
+	@(cd tests; $(MAKE) all torture-test)
 
-#test-am:
-#	@(cd tests; $(MAKE) all am-test)
+test-event:
+	@(cd tests; $(MAKE) all event-test)
+
+test-am:
+	@(cd tests; $(MAKE) all am-test)
 
 examples:
 	@(cd docs/examples; $(MAKE) check)

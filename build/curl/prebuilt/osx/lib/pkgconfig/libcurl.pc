@@ -36,4 +36,4 @@ Description: Library to transfer files with ftp, http, etc.
 Version: 7.64.0
 Libs: -L${libdir} -lcurl
 Libs.private: -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
-Cflags: -I${includedir} -DCURL_STATICLIB
+Cflags: -I${includedir} 

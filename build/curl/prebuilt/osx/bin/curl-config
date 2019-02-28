@@ -24,7 +24,7 @@
 prefix=/Users/jayyang/work/unity-curl/build/curl/build/osx
 exec_prefix=${prefix}
 includedir=${prefix}/include
-cppflag_curl_staticlib=-DCURL_STATICLIB
+cppflag_curl_staticlib=
 
 usage()
 {
@@ -68,7 +68,7 @@ while test $# -gt 0; do
 
     case "$1" in
     --built-shared)
-        echo no
+        echo yes
         ;;
 
     --ca)
@@ -171,7 +171,7 @@ while test $# -gt 0; do
         ;;
 
     --static-libs)
-        if test "Xyes" != "Xno" ; then
+        if test "Xno" != "Xno" ; then
           echo ${exec_prefix}/lib/libcurl.a -L/Users/jayyang/work/unity-curl/build/openssl/prebuilt/osx/lib -L/Users/jayyang/work/unity-curl/build/nghttp2/prebuilt/osx/lib -lnghttp2 -lssl -lcrypto -lssl -lcrypto -lz
         else
           echo "curl was built with static libraries disabled" >&2
@@ -180,7 +180,7 @@ while test $# -gt 0; do
         ;;
 
     --configure)
-        echo " '--host=i686-apple-darwin' '--prefix=/Users/jayyang/work/unity-curl/build/curl/build/osx' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/osx' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/osx' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-shared' 'host_alias=i686-apple-darwin'"
+        echo " '--host=i686-apple-darwin' '--prefix=/Users/jayyang/work/unity-curl/build/curl/build/osx' '--with-ssl=/Users/jayyang/work/unity-curl/build/curl/../openssl/prebuilt/osx' '--with-nghttp2=/Users/jayyang/work/unity-curl/build/curl/../nghttp2/prebuilt/osx' '--enable-ipv6' '--disable-ftp' '--disable-file' '--disable-ldap' '--disable-ldaps' '--disable-rtsp' '--disable-proxy' '--disable-dict' '--disable-telnet' '--disable-tftp' '--disable-pop3' '--disable-imap' '--disable-smb' '--disable-smtp' '--disable-gopher' '--disable-manual' '--disable-static' 'host_alias=i686-apple-darwin'"
         ;;
 
     *)
