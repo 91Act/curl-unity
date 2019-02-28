@@ -9,3 +9,5 @@ build/**/build
 Library
 Temp
 Logs
+*.vs
+obj
