@@ -4,3 +4,8 @@
 **/*.d
 **/*.lo
 build/**/build
+*.csproj
+*.sln
+Library
+Temp
+Logs
