@@ -1,0 +1,13 @@
+Makefile
+apps/libapps.a
+configdata.pm
+crypto/buildinf.h
+crypto/include/internal/bn_conf.h
+crypto/include/internal/dso_conf.h
+include/openssl/opensslconf.h
+libcrypto.a
+libcrypto.pc
+libssl.a
+libssl.pc
+openssl.pc
+test/libtestutil.a
