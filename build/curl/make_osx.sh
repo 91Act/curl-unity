@@ -34,8 +34,7 @@ do_make()
             --disable-smtp \
             --disable-gopher \
             --disable-manual \
-            --disable-static \
-            --enable-debug
+            --disable-static
 
         make clean
         make install -j8

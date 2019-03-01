@@ -3,6 +3,8 @@
 **/*.o
 **/*.d
 **/*.lo
+**/*.la
+**/curl-config
 build/**/build
 *.csproj
 *.sln
@@ -11,3 +13,4 @@ Temp
 Logs
 *.vs
 obj
+**/pkgconfig
