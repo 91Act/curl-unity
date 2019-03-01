@@ -1,4 +1,4 @@
-PWD=`pwd`
+PROJ=`pwd`
 CURL_VERSION=curl-7.64.0
 
 if [ ! -d $CURL_VERSION ]; then    
@@ -7,15 +7,14 @@ fi
 
 do_make()
 {
-    BUILD_DIR=$PWD/build/osx
-    PREBUILT_DIR=$PWD/prebuilt/osx
-    OPENSSL_ROOT=$PWD/../openssl/prebuilt/osx
-    NGHTTP2_ROOT=$PWD/../nghttp2/prebuilt/osx
+    BUILD_DIR=$PROJ/build/osx
+    PREBUILT_DIR=$PROJ/prebuilt/osx
+    OPENSSL_ROOT=$PROJ/../openssl/prebuilt/osx
+    NGHTTP2_ROOT=$PROJ/../nghttp2/prebuilt/osx
 
     (
         cd $CURL_VERSION
         ./configure \
-            --host=i686-apple-darwin \
             --prefix=$BUILD_DIR \
             --with-ssl=$OPENSSL_ROOT \
             --with-nghttp2=$NGHTTP2_ROOT \
@@ -35,7 +34,8 @@ do_make()
             --disable-smtp \
             --disable-gopher \
             --disable-manual \
-            --disable-static
+            --disable-static \
+            --enable-debug
 
         make clean
         make install -j8
