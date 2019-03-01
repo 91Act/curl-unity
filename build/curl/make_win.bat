@@ -7,7 +7,6 @@ set SSL_ROOT=%PROJ_ROOT%\..\openssl\prebuilt\win
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 pushd %CURL_ROOT%\winbuild
-set CL=/MP
 nmake /f Makefile.vc mode=dll VC=15 MACHINE=x64 ^
     WITH_NGHTTP2=static NGHTTP2_PATH=%NGHTTP2_ROOT% ^
     WITH_SSL=static SSL_PATH=%SSL_ROOT% ^
