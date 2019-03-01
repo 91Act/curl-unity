@@ -30,6 +30,8 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 
 There are several build script under `build` folder for each platform:
 
+> All the scripts will auto deloy the output files into `Assets/curl-unity/Plugins`.
+
 ### make_andriod.sh
     
 Build `libcurl.so` for Android. Please use this script on macOS *but it should also works on Linux*.
@@ -45,5 +47,3 @@ Build `curl.bundle` for macOS. Please use this script on macOS.
 ### make_win.bat
 
 Build `curl.dll` for Windows. Please use this script on Windows.
-
-> All the scripts will auto deloy the output files into `Assets/curl-unity/Plugins`.
