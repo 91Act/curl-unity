@@ -19,26 +19,26 @@ namespace CurlUnity
         public const string LIB_NAME = "curl";
 #endif
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_global_init(long flags);
+        public static extern CURLE curl_global_init(long flags);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_easy_init();
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_easy_setopt(IntPtr curl, CURLOPT option, IntPtr arg);
+        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, IntPtr arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_easy_setopt(IntPtr curl, CURLOPT option, string arg);
+        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, string arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_easy_setopt(IntPtr curl, CURLOPT option, byte[] arg);
+        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, byte[] arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_easy_setopt(IntPtr curl, CURLOPT option, bool arg);
+        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, bool arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_easy_setopt(IntPtr curl, CURLOPT option, long arg);
+        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, long arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_easy_setopt(IntPtr curl, CURLOPT option, Delegates.curl_writedata_function func);
+        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, Delegates.curl_writedata_function func);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLcode curl_easy_perform(IntPtr curl);
+        public static extern CURLE curl_easy_perform(IntPtr curl);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_easy_cleanup(IntPtr curl);

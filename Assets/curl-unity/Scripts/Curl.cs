@@ -20,17 +20,19 @@ namespace CurlUnity
 
         void Start()
         {
+            Interface.curl_global_init((long)CURLGLOBAL.ALL);
+
             var handle = Interface.curl_easy_init();
             var ms = new MemoryStream();
             var msHandle = GCHandle.Alloc(ms, GCHandleType.Pinned);
 
-            Interface.curl_easy_setopt(handle, CURLOPT.URL, @"https://nghttp2.org");
-            Interface.curl_easy_setopt(handle, CURLOPT.HTTP_VERSION, (int)HTTPcode.Version.CURL_HTTP_VERSION_2_0);
-            Interface.curl_easy_setopt(handle, CURLOPT.SSL_VERIFYPEER, false);
-            Interface.curl_easy_setopt(handle, CURLOPT.SSL_VERIFYHOST, false);
-            Interface.curl_easy_setopt(handle, CURLOPT.HEADER, true);
-            Interface.curl_easy_setopt(handle, CURLOPT.WRITEFUNCTION, OnWriteData);
-            Interface.curl_easy_setopt(handle, CURLOPT.WRITEDATA, (IntPtr)msHandle);            
+            Debug.Log(Interface.curl_easy_setopt(handle, CURLOPT.URL, @"https://nghttp2.org"));
+            Debug.Log(Interface.curl_easy_setopt(handle, CURLOPT.HTTP_VERSION, (int)HTTPVersion.VERSION_2_0));
+            Debug.Log(Interface.curl_easy_setopt(handle, CURLOPT.SSL_VERIFYPEER, false));
+            Debug.Log(Interface.curl_easy_setopt(handle, CURLOPT.SSL_VERIFYHOST, false));
+            Debug.Log(Interface.curl_easy_setopt(handle, CURLOPT.HEADER, true));
+            Debug.Log(Interface.curl_easy_setopt(handle, CURLOPT.WRITEFUNCTION, OnWriteData));
+            Debug.Log(Interface.curl_easy_setopt(handle, CURLOPT.WRITEDATA, (IntPtr)msHandle));
             Interface.curl_easy_perform(handle);
 
             msHandle.Free();
