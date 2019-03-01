@@ -1,6 +1,7 @@
 *.csproj
 *.sln
 *.vs
+**/.*
 **/*.a
 **/*.d
 **/*.DS_Store
@@ -11,10 +12,11 @@
 **/*.lo
 **/*.o
 **/*.obj
+**/*.pc
 **/*.pdb
 **/*.S
-**/*.pc
 **/curl-config
+**/Makefile
 **/pkgconfig
 **/prebuilt/**/share
 build/**/build

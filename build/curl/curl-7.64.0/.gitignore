@@ -1,16 +1,7 @@
-Makefile
 config.log
 config.status
 docs
 lib
-test
+tests
 builds
 libtool
-packages/Makefile
-packages/vms/Makefile
-scripts/Makefile
-src/.deps/
-src/.libs/
-src/Makefile
-src/curl
-src/tool_hugehelp.c
