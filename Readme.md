@@ -5,7 +5,7 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 ## Supported platforms
 
 * Windows x64
-* macOS
+* macOS 64bit
 * iOS arm64/arm64e
 * Android armv7/arm64/x86
 
@@ -26,11 +26,24 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 * Xcode is required for macOS/iOS.
 * Visual Studio 2017 and [Perl](https://www.activestate.com/products/activeperl/downloads/) is required for Windows.
 
-## Steps
+## Scripts
 
-There are several build script named as `build_xxx` under each library's folder. he name of script tells the platform it builds for. Please run the scripts in the order:
+There are several build script under `build` folder for each platform:
 
-1. openssl
-2. nghttp2
-3. curl
-4. curl-unity
+### make_andriod.sh
+    
+Build `libcurl.so` for Android. Please use this script on macOS *but it should also works on Linux*.
+
+### make_ios.sh
+
+Build `libcurl.a` for iOS. Please use this script on macOS
+
+### make_osx.sh
+
+Build `curl.bundle` for macOS. Please use this script on macOS.
+
+### make_win.bat
+
+Build `curl.dll` for Windows. Please use this script on Windows.
+
+> All the scripts will auto deloy the output files into `Assets/curl-unity/Plugins`.
