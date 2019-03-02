@@ -78,10 +78,7 @@ namespace CurlUnity
             value = null;
             IntPtr ptr = IntPtr.Zero;
             var result = Lib.curl_easy_getinfo(m_curl, info, ref ptr);
-            if (ptr != IntPtr.Zero)
-            {
-                value = new CurlSlist(ptr);
-            }
+            value = new CurlSlist(ptr);
             return result;
         }
         #endregion
