@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace CurlUnity
 {
     public class CurlEasy : IDisposable
     {
         private IntPtr m_curl;
-        private Stream m_responseHeaderStream;
-        private Stream m_responseBodyStream;
+        private byte[] m_responseBody;
         private Dictionary<string, string> m_responseHeader;
 
         public CurlEasy()
@@ -25,32 +25,32 @@ namespace CurlUnity
         #region SetOpt
         public CURLE SetOpt(CURLOPT options, IntPtr value)
         {
-            return Lib.curl_easy_setopt(m_curl, options, value);
+            return Lib.curl_easy_setopt_ptr(m_curl, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, string value)
         {
-            return Lib.curl_easy_setopt(m_curl, options, value);
+            return Lib.curl_easy_setopt_str(m_curl, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, byte[] value)
         {
-            return Lib.curl_easy_setopt(m_curl, options, value);
+            return Lib.curl_easy_setopt_ptr(m_curl, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, bool value)
         {
-            return Lib.curl_easy_setopt(m_curl, options, value);
+            return Lib.curl_easy_setopt_int(m_curl, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, long value)
         {
-            return Lib.curl_easy_setopt(m_curl, options, value);
+            return Lib.curl_easy_setopt_int(m_curl, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.curl_writedata_function value)
         {
-            return Lib.curl_easy_setopt(m_curl, options, value);
+            return Lib.curl_easy_setopt_ptr(m_curl, options, value);
         }
 
         #endregion
@@ -58,26 +58,35 @@ namespace CurlUnity
         public CURLE GetInfo(CURLINFO info, out long value)
         {
             value = 0;
-            return Lib.curl_easy_getinfo(m_curl, info, ref value);
+            return Lib.curl_easy_getinfo_ptr(m_curl, info, ref value);
         }
 
         public CURLE GetInfo(CURLINFO info, out double value)
         {
             value = 0;
-            return Lib.curl_easy_getinfo(m_curl, info, ref value);
+            return Lib.curl_easy_getinfo_ptr(m_curl, info, ref value);
         }
 
         public CURLE GetInfo(CURLINFO info, out string value)
         {
             value = null;
-            return Lib.curl_easy_getinfo(m_curl, info, ref value);
+            IntPtr ptr = IntPtr.Zero;
+            var result = Lib.curl_easy_getinfo_ptr(m_curl, info, ref ptr);
+            if (ptr != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    value = Marshal.PtrToStringAnsi((IntPtr)ptr.ToPointer());
+                }
+            }
+            return result;
         }
 
         public CURLE GetInfo(CURLINFO info, out CurlSlist value)
         {
             value = null;
             IntPtr ptr = IntPtr.Zero;
-            var result = Lib.curl_easy_getinfo(m_curl, info, ref ptr);
+            var result = Lib.curl_easy_getinfo_ptr(m_curl, info, ref ptr);
             value = new CurlSlist(ptr);
             return result;
         }
@@ -85,18 +94,26 @@ namespace CurlUnity
 
         public CURLE Perform()
         {
-            m_responseHeaderStream = new MemoryStream();
-            m_responseBodyStream = new MemoryStream();
+            var responseHeaderStream = new MemoryStream();
+            var responseBodyStream = new MemoryStream();
 
-            SetOpt(CURLOPT.HEADERFUNCTION, WriteHeader);
+            var headerHandle = GCHandle.Alloc(responseHeaderStream);
+            var bodyHandle = GCHandle.Alloc(responseBodyStream);
+
+            SetOpt(CURLOPT.HEADERFUNCTION, WriteData);
+            SetOpt(CURLOPT.HEADERDATA, (IntPtr)headerHandle);
             SetOpt(CURLOPT.WRITEFUNCTION, WriteData);
+            SetOpt(CURLOPT.WRITEDATA, (IntPtr)bodyHandle);
 
             var result = Lib.curl_easy_perform(m_curl);
 
+            headerHandle.Free();
+            bodyHandle.Free();
+
             m_responseHeader = new Dictionary<string, string>();
 
-            m_responseHeaderStream.Position = 0;
-            var sr = new StreamReader(m_responseHeaderStream);
+            responseHeaderStream.Position = 0;
+            var sr = new StreamReader(responseHeaderStream);
 
             // Skip the first line for status code
             sr.ReadLine();
@@ -114,6 +131,8 @@ namespace CurlUnity
                     break;
                 }
             }
+
+            m_responseBody = responseBodyStream.ToArray();
 
             return result;
         }
@@ -153,33 +172,20 @@ namespace CurlUnity
             return value;
         }
 
-        public Stream GetResponseBody(bool rewind = true)
+        public byte[] GetResponseBody(bool rewind = true)
         {
-            if (rewind)
-            {
-                m_responseBodyStream.Position = 0;
-            }
-            return m_responseBodyStream;
+            return m_responseBody;
         }
 
-        private int WriteHeader(IntPtr ptr, int sz, int nmemb, IntPtr userdata)
+        [AOT.MonoPInvokeCallback(typeof(Delegates.curl_writedata_function))]
+        private static int WriteData(IntPtr ptr, int sz, int nmemb, IntPtr userdata)
         {
             unsafe
             {
                 var size = sz * nmemb;
                 var ums = new UnmanagedMemoryStream((byte*)ptr, size);
-                ums.CopyTo(m_responseHeaderStream);
-                return size;
-            }
-        }
-
-        private int WriteData(IntPtr ptr, int sz, int nmemb, IntPtr userdata)
-        {
-            unsafe
-            {
-                var size = sz * nmemb;
-                var ums = new UnmanagedMemoryStream((byte*)ptr, size);
-                ums.CopyTo(m_responseBodyStream);
+                var handle = (GCHandle)userdata;
+                ums.CopyTo(handle.Target as Stream);
                 return size;
             }
         }

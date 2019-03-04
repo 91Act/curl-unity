@@ -14,7 +14,7 @@ namespace CurlUnity
 
     public static class Lib
     {
-#if UNITY_IPHONE
+#if UNITY_IPHONE && !UNITY_EDITOR
         public const string LIB_NAME = "__Internal";
 #else
         public const string LIB_NAME = "curl";
@@ -30,29 +30,27 @@ namespace CurlUnity
         public static extern void curl_easy_cleanup(IntPtr curl);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, IntPtr arg);
+        public static extern CURLE curl_easy_setopt_int(IntPtr curl, CURLOPT option, long arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, string arg);
+        public static extern CURLE curl_easy_setopt_int(IntPtr curl, CURLOPT option, bool arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, byte[] arg);
+        public static extern CURLE curl_easy_setopt_str(IntPtr curl, CURLOPT option, string arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, bool arg);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, IntPtr arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, long arg);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, byte[] arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt(IntPtr curl, CURLOPT option, Delegates.curl_writedata_function func);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, Delegates.curl_writedata_function arg);
         
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_perform(IntPtr curl);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo(IntPtr curl, CURLINFO info, ref long arg);
+        public static extern CURLE curl_easy_getinfo_ptr(IntPtr curl, CURLINFO info, ref long arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo(IntPtr curl, CURLINFO info, ref double arg);
+        public static extern CURLE curl_easy_getinfo_ptr(IntPtr curl, CURLINFO info, ref double arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo(IntPtr curl, CURLINFO info, ref string arg);
-        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo(IntPtr curl, CURLINFO info, ref IntPtr arg);
+        public static extern CURLE curl_easy_getinfo_ptr(IntPtr curl, CURLINFO info, ref IntPtr arg);
         
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_easy_escape(IntPtr curl, string data, long length = 0);

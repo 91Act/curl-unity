@@ -847,6 +847,13 @@ CURLcode curl_easy_getinfo(struct Curl_easy *data, CURLINFO info, ...)
   return result;
 }
 
+/* !checksrc! disable LONGLINE all */
+CURLcode curl_easy_getinfo_ptr(struct Curl_easy *data, CURLINFO info, void **arg)
+{
+  return curl_easy_getinfo(data, info, arg);
+}
+/* !checksrc! enable LONGLINE */
+
 static CURLcode dupset(struct Curl_easy *dst, struct Curl_easy *src)
 {
   CURLcode result = CURLE_OK;

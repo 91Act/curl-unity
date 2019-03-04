@@ -2684,3 +2684,18 @@ CURLcode curl_easy_setopt(struct Curl_easy *data, CURLoption tag, ...)
   va_end(arg);
   return result;
 }
+
+/* !checksrc! disable LONGLINE all */
+CURLcode curl_easy_setopt_str(struct Curl_easy *data, CURLoption tag, const char *arg)
+{
+  return curl_easy_setopt(data, tag, arg);
+}
+CURLcode curl_easy_setopt_int(struct Curl_easy *data, CURLoption tag, long arg)
+{
+  return curl_easy_setopt(data, tag, arg);
+}
+CURLcode curl_easy_setopt_ptr(struct Curl_easy *data, CURLoption tag, void *arg)
+{
+  return curl_easy_setopt(data, tag, arg);
+}
+/* !checksrc! enable LONGLINE */

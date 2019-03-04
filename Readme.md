@@ -32,7 +32,7 @@ There are several build script under `build` folder for each platform:
 
 > All the scripts will auto deloy the output files into `Assets/curl-unity/Plugins`.
 
-### make_andriod.sh
+### make_android.sh
     
 Build `libcurl.so` for Android. Please use this script on macOS *but it should also works on Linux*.
 

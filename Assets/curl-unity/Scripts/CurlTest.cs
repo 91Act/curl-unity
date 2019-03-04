@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using UnityEngine;
 
 namespace CurlUnity
@@ -15,12 +16,16 @@ namespace CurlUnity
 
             curl.SetOpt(CURLOPT.URL, @"https://nghttp2.org");
             curl.SetOpt(CURLOPT.HTTP_VERSION, (int)HTTPVersion.VERSION_2_0);
+#if UNITY_EDITOR
             // TODO: Resolve the CA path for devices
             curl.SetOpt(CURLOPT.CAINFO, Path.GetFullPath("Assets/curl-unity/cacert.pem"));
-            //curl.SetOpt(CURLOPT.SSL_VERIFYPEER, false);
-            //curl.SetOpt(CURLOPT.SSL_VERIFYHOST, false);
+#else
+            curl.SetOpt(CURLOPT.SSL_VERIFYPEER, false);
+            curl.SetOpt(CURLOPT.SSL_VERIFYHOST, false);
+#endif
 
-            if (curl.Perform() == CURLE.OK)
+            var result = curl.Perform();
+            if (result == CURLE.OK)
             {
                 curl.GetInfo(CURLINFO.HEADER_SIZE, out long headerSize);
                 Debug.Log("Header size: " + headerSize);
@@ -40,8 +45,11 @@ namespace CurlUnity
                     Debug.Log("Header: " + entry.Key + " -> " + entry.Value);
                 }
 
-                var sr = new StreamReader(curl.GetResponseBody());
-                Debug.Log(sr.ReadToEnd());
+                Debug.Log(Encoding.UTF8.GetString(curl.GetResponseBody()));
+            }
+            else
+            {
+                Debug.LogWarning("Perform failed: " + result);
             }
         }
     }
