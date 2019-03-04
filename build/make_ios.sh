@@ -3,7 +3,9 @@ for lib in openssl nghttp2 curl; do
 done
 
 mkdir -p ../Assets/curl-unity/Plugins/ios
-cp openssl/prebuilt/ios/lib/libssl.a ../Assets/curl-unity/Plugins/ios
-cp openssl/prebuilt/ios/lib/libcrypto.a ../Assets/curl-unity/Plugins/ios
-cp nghttp2/prebuilt/ios/lib/libnghttp2.a ../Assets/curl-unity/Plugins/ios
-cp curl/prebuilt/ios/lib/libcurl.a ../Assets/curl-unity/Plugins/ios
+
+libtool -static -o ../Assets/curl-unity/Plugins/ios/libcurl.a \
+    openssl/prebuilt/ios/lib/libssl.a \
+    openssl/prebuilt/ios/lib/libcrypto.a \
+    nghttp2/prebuilt/ios/lib/libnghttp2.a \
+    curl/prebuilt/ios/lib/libcurl.a
