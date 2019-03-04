@@ -14,15 +14,15 @@ namespace CurlUnity
 
             var curl = new CurlEasy();
 
+            curl.SetOpt(CURLOPT.VERBOSE, true);
             curl.SetOpt(CURLOPT.URL, @"https://nghttp2.org");
+            var capath = Path.Combine(Application.persistentDataPath, "cacert");
+            if (!File.Exists(capath))
+            {
+                File.WriteAllBytes(capath, Resources.Load<TextAsset>("cacert").bytes);
+            }
             curl.SetOpt(CURLOPT.HTTP_VERSION, (int)HTTPVersion.VERSION_2_0);
-#if UNITY_EDITOR
-            // TODO: Resolve the CA path for devices
-            curl.SetOpt(CURLOPT.CAINFO, Path.GetFullPath("Assets/curl-unity/cacert.pem"));
-#else
-            curl.SetOpt(CURLOPT.SSL_VERIFYPEER, false);
-            curl.SetOpt(CURLOPT.SSL_VERIFYHOST, false);
-#endif
+            curl.SetOpt(CURLOPT.CAINFO, capath);
 
             var result = curl.Perform();
             if (result == CURLE.OK)
