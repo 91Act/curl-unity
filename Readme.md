@@ -21,6 +21,7 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 
 ## Requirements
 
+* [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) is requried for macOS/iOS/Android. It could be installed via `brew install pkg-config` on macOS.
 * [CMake](https://cmake.org/download/) is required for all platforms.
 * [NDK r16b](https://developer.android.com/ndk/downloads/older_releases.html) is required for Android.
 * Xcode is required for macOS/iOS.
