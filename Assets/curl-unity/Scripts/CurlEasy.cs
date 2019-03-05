@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace CurlUnity
@@ -12,7 +13,6 @@ namespace CurlUnity
         public string url { get; set; }
         public string method { get; set; } = "GET";
         public string contentType { get; set; } = "application/text";
-        public string charset { get; set; } = "utf-8";
         public string outputPath { get; set; }
         public int timeout { get; set; } = 10000;
         public int maxRetryCount { get; set; } = 5;
@@ -23,6 +23,7 @@ namespace CurlUnity
         public string httpVersion { get; private set; }
         public int status { get; private set; }
         public string message { get; private set; }
+        public bool running { get; private set; }
         public bool debug { get; set; }
 
         private IntPtr handle;
@@ -44,6 +45,7 @@ namespace CurlUnity
             {
                 File.WriteAllBytes(s_capath, Resources.Load<TextAsset>("cacert").bytes);
             }
+            Lib.curl_global_init((long)CURLGLOBAL.ALL);
         }
 
         public CurlEasy()
@@ -136,8 +138,10 @@ namespace CurlUnity
         }
         #endregion
 
-        public CURLE Perform()
+        public async Task<CURLE> Perform()
         {
+            running = true;
+
             thisHandle = GCHandle.Alloc(this);
 
             var retryCount = maxRetryCount;
@@ -145,13 +149,13 @@ namespace CurlUnity
 
             while (retryCount > 0)
             {
-                result = PerformRequest();
+                result = await PerformRequest();
                 ProcessResponse();
 
                 if (result == CURLE.OK)
                 {
                     if (status == 200) break;
-                    if (status >= 300 && status < 400)
+                    if (status / 100 == 3)
                     {
                         if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
                         {
@@ -170,10 +174,12 @@ namespace CurlUnity
 
             thisHandle.Free();
 
+            running = false;
+
             return result;
         }
 
-        private CURLE PerformRequest()
+        private async Task<CURLE> PerformRequest()
         {
             SetOpt(CURLOPT.URL, url);
             SetOpt(CURLOPT.CUSTOMREQUEST, method);
@@ -194,7 +200,7 @@ namespace CurlUnity
 
             // Fill request header
             var requestHeader = new CurlSlist(IntPtr.Zero);
-            requestHeader.Append($"Content-Type:{contentType}; charset={charset}");
+            requestHeader.Append($"Content-Type:{contentType}");
             if (this.userHeader != null)
             {
                 foreach (var entry in this.userHeader)
@@ -243,7 +249,10 @@ namespace CurlUnity
             SetOpt(CURLOPT.TIMEOUT_MS, timeout);
 
             // Perform
-            return Lib.curl_easy_perform(handle);
+            return await Task.Run(() =>
+            {
+                return Lib.curl_easy_perform(handle);
+            });
         }
 
         private void ProcessResponse()
@@ -410,7 +419,7 @@ namespace CurlUnity
                         var firstLine = sr.ReadLine();
                     }
 
-                    while(true)
+                    while (true)
                     {
                         var line = sr.ReadLine();
                         if (!string.IsNullOrEmpty(line))
