@@ -4,23 +4,30 @@ using System.Runtime.InteropServices;
 
 namespace CurlUnity
 {
+    [StructLayout(LayoutKind.Sequential)]
+    struct __curl_slist
+    {
+        public IntPtr data;
+        public IntPtr next;
+    }
+
     public class CurlSlist : IDisposable
     {
-        private IntPtr m_ptr;
+        private IntPtr ptr;
 
-        public CurlSlist(IntPtr ptr)
+        public CurlSlist(IntPtr _ptr)
         {
-            m_ptr = ptr;
+            ptr = _ptr;
         }
 
         public void Dispose()
         {
             unsafe
             {
-                if (m_ptr != IntPtr.Zero)
+                if (ptr != IntPtr.Zero)
                 {
-                    Lib.curl_slist_free_all((IntPtr)(m_ptr));
-                    m_ptr = IntPtr.Zero;
+                    Lib.curl_slist_free_all((IntPtr)(ptr));
+                    ptr = IntPtr.Zero;
                 }
             }
         }
@@ -30,7 +37,7 @@ namespace CurlUnity
             var result = new List<string>();
             unsafe
             {
-                var iter = (__curl_slist*)(m_ptr);
+                var iter = (__curl_slist*)(ptr);
                 while(iter != null)
                 {
                     result.Add(Marshal.PtrToStringAnsi(iter->data));
@@ -44,22 +51,19 @@ namespace CurlUnity
         {
             unsafe
             {
-                var head = (__curl_slist*)(m_ptr);
-                m_ptr = Lib.curl_slist_append((IntPtr)head, value);
+                var head = (__curl_slist*)(ptr);
+                ptr = Lib.curl_slist_append((IntPtr)head, value);
             }
         }
 
-        public IntPtr GetPtr()
+        public static explicit operator IntPtr(CurlSlist slist)
         {
-            return m_ptr;
+            return slist.ptr;
         }
 
-        [StructLayout(LayoutKind.Sequential)]
-        private struct __curl_slist
+        public static explicit operator CurlSlist(IntPtr ptr)
         {
-            public IntPtr data;
-            public IntPtr next;
+            return new CurlSlist(ptr);
         }
-
     }
 }

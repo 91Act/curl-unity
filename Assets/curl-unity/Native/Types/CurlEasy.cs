@@ -10,6 +10,8 @@ namespace CurlUnity
 {
     public class CurlEasy : IDisposable
     {
+        public delegate void PerformCallback(CurlEasy easy);
+
         public string url { get; set; }
         public string method { get; set; } = "GET";
         public string contentType { get; set; } = "application/text";
@@ -25,8 +27,10 @@ namespace CurlUnity
         public string message { get; private set; }
         public bool running { get; private set; }
         public bool debug { get; set; }
+        public PerformCallback performCallback;
 
-        private IntPtr handle;
+        private IntPtr easyPtr;
+        private int retryCount;
         private Dictionary<string, string> userHeader;
         private Dictionary<string, string> outHeader;
         private Dictionary<string, string> inHeader;
@@ -48,55 +52,72 @@ namespace CurlUnity
             Lib.curl_global_init((long)CURLGLOBAL.ALL);
         }
 
-        public CurlEasy()
+        public CurlEasy(IntPtr ptr = default(IntPtr))
         {
-            handle = Lib.curl_easy_init();
+            if (ptr != IntPtr.Zero)
+            {
+                easyPtr = ptr;
+            }
+            else
+            {
+                easyPtr = Lib.curl_easy_init();
+            }
         }
 
         public void Dispose()
         {
-            Lib.curl_easy_cleanup(handle);
+            Lib.curl_easy_cleanup(easyPtr);
+        }
+
+        public void Reset()
+        {
+            Lib.curl_easy_reset(easyPtr);
+        }
+
+        public CurlEasy Duplicate()
+        {
+            return new CurlEasy(Lib.curl_easy_duphandle(easyPtr));
         }
 
         #region SetOpt
         public CURLE SetOpt(CURLOPT options, IntPtr value)
         {
-            return Lib.curl_easy_setopt_ptr(handle, options, value);
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, string value)
         {
-            return Lib.curl_easy_setopt_str(handle, options, value);
+            return Lib.curl_easy_setopt_str(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, byte[] value)
         {
-            return Lib.curl_easy_setopt_ptr(handle, options, value);
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, bool value)
         {
-            return Lib.curl_easy_setopt_int(handle, options, value);
+            return Lib.curl_easy_setopt_int(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, long value)
         {
-            return Lib.curl_easy_setopt_int(handle, options, value);
+            return Lib.curl_easy_setopt_int(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.WriteFunction value)
         {
-            return Lib.curl_easy_setopt_ptr(handle, options, value);
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.HeaderFunction value)
         {
-            return Lib.curl_easy_setopt_ptr(handle, options, value);
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.DebugFunction value)
         {
-            return Lib.curl_easy_setopt_ptr(handle, options, value);
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
         }
 
         #endregion
@@ -104,20 +125,20 @@ namespace CurlUnity
         public CURLE GetInfo(CURLINFO info, out long value)
         {
             value = 0;
-            return Lib.curl_easy_getinfo_ptr(handle, info, ref value);
+            return Lib.curl_easy_getinfo_ptr(easyPtr, info, ref value);
         }
 
         public CURLE GetInfo(CURLINFO info, out double value)
         {
             value = 0;
-            return Lib.curl_easy_getinfo_ptr(handle, info, ref value);
+            return Lib.curl_easy_getinfo_ptr(easyPtr, info, ref value);
         }
 
         public CURLE GetInfo(CURLINFO info, out string value)
         {
             value = null;
             IntPtr ptr = IntPtr.Zero;
-            var result = Lib.curl_easy_getinfo_ptr(handle, info, ref ptr);
+            var result = Lib.curl_easy_getinfo_ptr(easyPtr, info, ref ptr);
             if (ptr != IntPtr.Zero)
             {
                 unsafe
@@ -132,61 +153,83 @@ namespace CurlUnity
         {
             value = null;
             IntPtr ptr = IntPtr.Zero;
-            var result = Lib.curl_easy_getinfo_ptr(handle, info, ref ptr);
+            var result = Lib.curl_easy_getinfo_ptr(easyPtr, info, ref ptr);
             value = new CurlSlist(ptr);
             return result;
         }
         #endregion
 
-        public async Task<CURLE> Perform()
+        public void Perform(CurlMulti multi, PerformCallback callback)
         {
-            running = true;
+            if (!running)
+            {
+                running = true;
+                retryCount = maxRetryCount;
+                performCallback = callback;
+                Prepare();
+                multi.AddHandle(this);
+            }
+            else
+            {
+                Debug.LogError("Can't preform a running handle again!");
+            }
+        }
+
+        public void OnPerformComplete(CURLE result, CurlMulti multi)
+        {
+            thisHandle.Free();
+
+            var done = false;
+
+            if (result == CURLE.OK)
+            {
+                ProcessResponse();
+
+                if (status == 200)
+                {
+                    done = true;
+                }
+                else if (status / 100 == 3)
+                {
+                    if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
+                    {
+                        url = location;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to request: {url}, reason: {result}");
+            }
+
+            if (done || --retryCount < 0)
+            {
+                if (debug) Dump();
+                performCallback?.Invoke(this);
+                performCallback = null;
+                running = false;
+            }
+            else
+            {
+                Prepare();
+                multi.AddHandle(this);
+            }
+        }
+
+        private void Prepare()
+        {
+            status = 0;
+            message = null;
 
             thisHandle = GCHandle.Alloc(this);
 
-            var retryCount = maxRetryCount;
-            CURLE result = CURLE.OK;
-
-            while (retryCount > 0)
-            {
-                result = await PerformRequest();
-                ProcessResponse();
-
-                if (result == CURLE.OK)
-                {
-                    if (status == 200) break;
-                    if (status / 100 == 3)
-                    {
-                        if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
-                        {
-                            url = location;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-                }
-                retryCount--;
-            }
-
-            if (debug) Dump();
-
-            thisHandle.Free();
-
-            running = false;
-
-            return result;
-        }
-
-        private async Task<CURLE> PerformRequest()
-        {
             SetOpt(CURLOPT.URL, url);
             SetOpt(CURLOPT.CUSTOMREQUEST, method);
 
             if (useHttp2)
             {
                 SetOpt(CURLOPT.HTTP_VERSION, (long)HTTPVersion.VERSION_2_0);
+                SetOpt(CURLOPT.PIPEWAIT, true);
             }
 
             if (insecure)
@@ -208,8 +251,8 @@ namespace CurlUnity
                     requestHeader.Append(entry.Key + ":" + entry.Value);
                 }
             }
-            SetOpt(CURLOPT.HTTPHEADER, requestHeader.GetPtr());
 
+            SetOpt(CURLOPT.HTTPHEADER, (IntPtr)requestHeader);
             // Fill request body
             if (outData != null && outData.Length > 0)
             {
@@ -247,12 +290,6 @@ namespace CurlUnity
 
             // Timeout
             SetOpt(CURLOPT.TIMEOUT_MS, timeout);
-
-            // Perform
-            return await Task.Run(() =>
-            {
-                return Lib.curl_easy_perform(handle);
-            });
         }
 
         private void ProcessResponse()
@@ -308,7 +345,7 @@ namespace CurlUnity
             GetInfo(CURLINFO.CONTENT_LENGTH_DOWNLOAD, out double downloadSize);
             GetInfo(CURLINFO.TOTAL_TIME, out double time);
 
-            sb.AppendLine($"{effectiveUrl} [ {method.ToUpper()} ] [ {httpVersion} {status} {message} ] [ {updateSize} | {downloadSize} ] [ {time * 1000} ms ]");
+            sb.AppendLine($"{effectiveUrl} [ {method.ToUpper()} ] [ {httpVersion} {status} {message} ] [ {updateSize}({(outData != null ? outData.Length : 0)}) | {downloadSize}({(inData != null ? inData.Length : 0)}) ] [ {time * 1000} ms ]");
 
             if (outHeader != null)
             {
@@ -319,7 +356,7 @@ namespace CurlUnity
                 }
             }
 
-            if (outData != null)
+            if (outData != null && outData.Length > 0)
             {
                 sb.AppendLine($"<b><color=lightblue>Request Body</color></b> [ {outData.Length} ]");
                 sb.AppendLine(Encoding.UTF8.GetString(outData, 0, Math.Min(outData.Length, 0x400)));
@@ -334,7 +371,7 @@ namespace CurlUnity
                 }
             }
 
-            if (inData != null)
+            if (inData != null && inData.Length > 0)
             {
                 sb.AppendLine($"<b><color=lightblue>Response Body</color></b> [ {inData.Length} ]");
                 sb.AppendLine(Encoding.UTF8.GetString(inData, 0, Math.Min(inData.Length, 0x400)));
@@ -444,7 +481,7 @@ namespace CurlUnity
         public string Escape(string data)
         {
             string result = null;
-            var ptr = Lib.curl_easy_escape(handle, data);
+            var ptr = Lib.curl_easy_escape(easyPtr, data);
             if (ptr != IntPtr.Zero)
             {
                 result = Marshal.PtrToStringAnsi(ptr);
@@ -456,7 +493,7 @@ namespace CurlUnity
         public string Unescape(string data)
         {
             string result = null;
-            var ptr = Lib.curl_easy_unescape(handle, data);
+            var ptr = Lib.curl_easy_unescape(easyPtr, data);
             if (ptr != IntPtr.Zero)
             {
                 result = Marshal.PtrToStringAnsi(ptr);
@@ -465,5 +502,14 @@ namespace CurlUnity
             return result;
         }
 
+        public static explicit operator IntPtr(CurlEasy easy)
+        {
+            return easy.easyPtr;
+        }
+
+        public static explicit operator CurlEasy(IntPtr ptr)
+        {
+            return new CurlEasy(ptr);
+        }
     }
 }
