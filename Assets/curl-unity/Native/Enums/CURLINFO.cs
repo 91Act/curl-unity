@@ -1,8 +1,21 @@
 namespace CurlUnity
 {
+    public enum CURLINFODEBUG
+    {
+        TEXT = 0,
+        HEADER_IN,    /* 1 */
+        HEADER_OUT,   /* 2 */
+        DATA_IN,      /* 3 */
+        DATA_OUT,     /* 4 */
+        SSL_DATA_IN,  /* 5 */
+        SSL_DATA_OUT, /* 6 */
+        END
+    }
+
     public enum CURLINFO
     {
         NONE, /* first, never use this */
+
         STRING = 0x100000,
         LONG = 0x200000,
         DOUBLE = 0x300000,

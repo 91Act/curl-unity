@@ -12,44 +12,19 @@ namespace CurlUnity
         {
             Lib.curl_global_init((long)CURLGLOBAL.ALL);
 
-            var curl = new CurlEasy();
-
-            curl.SetOpt(CURLOPT.VERBOSE, true);
-            curl.SetOpt(CURLOPT.URL, @"https://nghttp2.org");
-            var capath = Path.Combine(Application.persistentDataPath, "cacert");
-            if (!File.Exists(capath))
+            using (var curl = new CurlEasy())
             {
-                File.WriteAllBytes(capath, Resources.Load<TextAsset>("cacert").bytes);
-            }
-            curl.SetOpt(CURLOPT.HTTP_VERSION, (int)HTTPVersion.VERSION_2_0);
-            curl.SetOpt(CURLOPT.CAINFO, capath);
+                curl.url = @"http://www.qq.com";
+                curl.debug = true;
+                curl.useHttp2 = true;
+                curl.timeout = 5000;
+                curl.outData = Encoding.UTF8.GetBytes("");                
 
-            var result = curl.Perform();
-            if (result == CURLE.OK)
-            {
-                curl.GetInfo(CURLINFO.HEADER_SIZE, out long headerSize);
-                Debug.Log("Header size: " + headerSize);
-
-                curl.GetInfo(CURLINFO.SPEED_DOWNLOAD, out double downloadSpeed);
-                Debug.Log("Download speed: " + downloadSpeed);
-
-                curl.GetInfo(CURLINFO.CONTENT_TYPE, out string contentType);
-                Debug.Log("Content type: " + contentType);
-
-                curl.GetInfo(CURLINFO.SSL_ENGINES, out CurlSlist sslEngines);
-
-                Debug.Log("SSL engines: " + string.Join(", ", sslEngines.GetStrings()));
-
-                foreach(var entry in curl.GetAllResponseHeaders())
+                var result = curl.Perform();
+                if (result != CURLE.OK)
                 {
-                    Debug.Log("Header: " + entry.Key + " -> " + entry.Value);
+                    Debug.LogWarning("Perform failed: " + result);
                 }
-
-                Debug.Log(Encoding.UTF8.GetString(curl.GetResponseBody()));
-            }
-            else
-            {
-                Debug.LogWarning("Perform failed: " + result);
             }
         }
     }

@@ -40,12 +40,12 @@ namespace CurlUnity
             return result;
         }
 
-        public void AddString(string value)
+        public void Append(string value)
         {
             unsafe
             {
                 var head = (__curl_slist*)(m_ptr);
-                Lib.curl_slist_append((IntPtr)head, value);
+                m_ptr = Lib.curl_slist_append((IntPtr)head, value);
             }
         }
 

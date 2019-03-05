@@ -9,7 +9,11 @@ namespace CurlUnity
     public static class Delegates
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int curl_writedata_function(IntPtr ptr, int sz, int nmemb, IntPtr userdata);
+        public delegate int WriteFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate int DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, int size, IntPtr userdata);
     }
 
     public static class Lib
@@ -40,8 +44,12 @@ namespace CurlUnity
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, byte[] arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, Delegates.curl_writedata_function arg);
-        
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, Delegates.WriteFunction arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, Delegates.HeaderFunction arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr curl, CURLOPT option, Delegates.DebugFunction arg);
+
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_perform(IntPtr curl);
 
@@ -59,7 +67,7 @@ namespace CurlUnity
 
         #endregion
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void curl_slist_append(IntPtr arg, string data);
+        public static extern IntPtr curl_slist_append(IntPtr arg, string data);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_slist_free_all(IntPtr arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
