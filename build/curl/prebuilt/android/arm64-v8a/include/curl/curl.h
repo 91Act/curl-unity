@@ -2671,6 +2671,7 @@ typedef enum {
 
 CURL_EXTERN CURLSH *curl_share_init(void);
 CURL_EXTERN CURLSHcode curl_share_setopt(CURLSH *, CURLSHoption option, ...);
+CURL_EXTERN CURLSHcode curl_share_setopt(CURLSH *, CURLSHoption option, ...);
 CURL_EXTERN CURLSHcode curl_share_setopt_int(CURLSH *, CURLSHoption option, int arg);
 CURL_EXTERN CURLSHcode curl_share_setopt_str(CURLSH *, CURLSHoption option, const char *arg);
 CURL_EXTERN CURLSHcode curl_share_setopt_ptr(CURLSH *, CURLSHoption option, void *arg);
