@@ -8,37 +8,23 @@ namespace CurlUnity
 {
     public class CurlTest : MonoBehaviour
     {
-        private CurlMulti m_multi;
-
-        private void MakeRequest(int id)
+        void Start()
         {
             var easy = new CurlEasy();
-            easy.url = $"http://nghttp2.org?id={id}";
-            easy.debug = true;
+            easy.url = "https://nghttp2.org";
             easy.useHttp2 = true;
             easy.timeout = 5000;
 
-            easy.Perform(m_multi, OnPerformCallback);
+            var multi = new CurlMulti();
+            easy.MultiPerform(multi, OnPerformCallback);
         }
 
-        private void OnPerformCallback(CurlEasy easy)
+        void OnPerformCallback(CURLE result, CurlEasy easy)
         {
-            Debug.Log("Perform finished: " + easy.url);
-        }
-
-        void Start()
-        {
-            m_multi = new CurlMulti();
-
-            for(int i = 0; i < 10; i++)
+            if (result == CURLE.OK)
             {
-                MakeRequest(i);
+                Debug.Log(Encoding.UTF8.GetString(easy.inData));
             }
-        }
-
-        void Update()
-        {
-            m_multi.Tick();
         }
     }
 }

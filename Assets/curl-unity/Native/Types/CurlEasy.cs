@@ -10,7 +10,7 @@ namespace CurlUnity
 {
     public class CurlEasy : IDisposable
     {
-        public delegate void PerformCallback(CurlEasy easy);
+        public delegate void PerformCallback(CURLE result, CurlEasy easy);
 
         public string url { get; set; }
         public string method { get; set; } = "GET";
@@ -159,15 +159,51 @@ namespace CurlUnity
         }
         #endregion
 
-        public void Perform(CurlMulti multi, PerformCallback callback)
+        public CURLE Perform()
+        {
+            CURLE result = (CURLE)(-1);
+            if (!running)
+            {
+                running = true;
+                retryCount = maxRetryCount;
+
+                while (true)
+                {
+                    Prepare();
+                    result = Lib.curl_easy_perform(easyPtr);
+                    var done = ProcessResponse(result);
+                    if (done || --retryCount < 0)
+                    {
+                        if (debug) Dump();
+                        break;
+                    }
+                }
+
+                running = false;
+            }
+            else
+            {
+                Debug.LogError("Can't preform a running handle again!");
+            }
+
+            return result;
+        }
+
+        public async Task<CURLE> PerformAsync()
+        {
+            return await Task.Run(Perform);
+        }
+
+        public void MultiPerform(CurlMulti multi, PerformCallback callback)
         {
             if (!running)
             {
                 running = true;
                 retryCount = maxRetryCount;
                 performCallback = callback;
+
                 Prepare();
-                multi.AddHandle(this);
+                multi.AddHandle(this, OnMultiPerformCallback);
             }
             else
             {
@@ -175,44 +211,21 @@ namespace CurlUnity
             }
         }
 
-        public void OnPerformComplete(CURLE result, CurlMulti multi)
+        private void OnMultiPerformCallback(CURLE result, CurlMulti multi)
         {
-            thisHandle.Free();
-
-            var done = false;
-
-            if (result == CURLE.OK)
-            {
-                ProcessResponse();
-
-                if (status == 200)
-                {
-                    done = true;
-                }
-                else if (status / 100 == 3)
-                {
-                    if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
-                    {
-                        url = location;
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"Failed to request: {url}, reason: {result}");
-            }
+            var done = ProcessResponse(result);
 
             if (done || --retryCount < 0)
             {
                 if (debug) Dump();
-                performCallback?.Invoke(this);
+                performCallback?.Invoke(result, this);
                 performCallback = null;
                 running = false;
             }
             else
             {
                 Prepare();
-                multi.AddHandle(this);
+                multi.AddHandle(this, OnMultiPerformCallback);
             }
         }
 
@@ -292,48 +305,73 @@ namespace CurlUnity
             SetOpt(CURLOPT.TIMEOUT_MS, timeout);
         }
 
-        private void ProcessResponse()
+        private bool ProcessResponse(CURLE result)
         {
-            inHeader = new Dictionary<string, string>();
+            var done = false;
 
-            responseHeaderStream.Position = 0;
-            var sr = new StreamReader(responseHeaderStream);
+            thisHandle.Free();
 
-            // Handle first line
+            if (result == CURLE.OK)
             {
-                var line = sr.ReadLine();
-                var index = line.IndexOf(' ');
-                httpVersion = line.Substring(0, index);
-                var nextIndex = line.IndexOf(' ', index + 1);
-                if (int.TryParse(line.Substring(index + 1, nextIndex - index), out var _status))
+                responseHeaderStream.Position = 0;
+                var sr = new StreamReader(responseHeaderStream);
+
+                // Handle first line
                 {
-                    status = _status;
+                    var line = sr.ReadLine();
+                    var index = line.IndexOf(' ');
+                    httpVersion = line.Substring(0, index);
+                    var nextIndex = line.IndexOf(' ', index + 1);
+                    if (int.TryParse(line.Substring(index + 1, nextIndex - index), out var _status))
+                    {
+                        status = _status;
+                    }
+                    message = line.Substring(nextIndex + 1);
                 }
-                message = line.Substring(nextIndex + 1);
+
+                inHeader = new Dictionary<string, string>();
+
+                while (true)
+                {
+                    var line = sr.ReadLine();
+                    if (!string.IsNullOrEmpty(line))
+                    {
+                        var index = line.IndexOf(':');
+                        var key = line.Substring(0, index).Trim();
+                        var value = line.Substring(index + 1).Trim();
+                        inHeader[key] = value;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                responseHeaderStream.Close();
+                responseHeaderStream = null;
+
+                var ms = responseBodyStream as MemoryStream;
+                inData = ms?.ToArray();
+                responseBodyStream.Close();
+                responseBodyStream = null;
+
+                if (status == 200)
+                {
+                    done = true;
+                }
+                else if (status / 100 == 3)
+                {
+                    if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
+                    {
+                        url = location;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to request: {url}, reason: {result}");
             }
 
-            while (true)
-            {
-                var line = sr.ReadLine();
-                if (!string.IsNullOrEmpty(line))
-                {
-                    var index = line.IndexOf(':');
-                    var key = line.Substring(0, index).Trim();
-                    var value = line.Substring(index + 1).Trim();
-                    inHeader[key] = value;
-                }
-                else
-                {
-                    break;
-                }
-            }
-            responseHeaderStream.Close();
-            responseHeaderStream = null;
-
-            var ms = responseBodyStream as MemoryStream;
-            inData = ms?.ToArray();
-            responseBodyStream.Close();
-            responseBodyStream = null;
+            return done;
         }
 
         private void Dump()
@@ -352,7 +390,7 @@ namespace CurlUnity
                 sb.AppendLine("<b><color=lightblue>Request Headers</color></b>");
                 foreach (var entry in outHeader)
                 {
-                    sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                    sb.AppendLine($"<b><color=grey>[{entry.Key}]</color></b> {entry.Value}");
                 }
             }
 
@@ -367,7 +405,7 @@ namespace CurlUnity
                 sb.AppendLine("<b><color=lightblue>Response Headers</color></b>");
                 foreach (var entry in inHeader)
                 {
-                    sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                    sb.AppendLine($"<b><color=grey>[{entry.Key}]</color></b> {entry.Value}");
                 }
             }
 

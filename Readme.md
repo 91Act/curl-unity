@@ -48,3 +48,60 @@ Build `curl.bundle` for macOS. Please use this script on macOS.
 ### make_win.bat
 
 Build `curl.dll` for Windows. Please use this script on Windows.
+
+# Usage
+
+## Blocking perform
+
+```csharp
+void Start()
+{
+    var easy = new CurlEasy();
+    easy.url = "https://nghttp2.org";
+    easy.useHttp2 = true;
+    easy.timeout = 5000;
+    if (easy.Perform() == CURLE.OK)
+    {
+        Debug.Log(Encoding.UTF8.GetString(easy.inData));
+    }
+}
+```
+
+## Non-Blocking perform via multi thread
+```csharp
+void Start()
+{
+    var easy = new CurlEasy();
+    easy.url = "https://nghttp2.org";
+    easy.useHttp2 = true;
+    easy.timeout = 5000;
+    if (await easy.PerformAsync() == CURLE.OK)
+    {
+        Debug.Log(Encoding.UTF8.GetString(easy.inData));
+    }
+}
+```
+
+
+## Non-Blocking perform via single thread (Recommended)
+
+```csharp
+void Start()
+{
+    var easy = new CurlEasy();
+    easy.url = "https://nghttp2.org";
+    easy.useHttp2 = true;
+    easy.timeout = 5000;
+
+    var multi = new CurlMulti();
+    easy.MultiPerform(multi, OnPerformCallback);
+}
+
+void OnPerformCallback(CURLE result, CurlEasy easy)
+{
+    if (result == CURLE.OK)
+    {
+        Debug.Log(Encoding.UTF8.GetString(easy.inData));
+    }
+}
+```

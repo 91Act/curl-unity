@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace CurlUnity
 {
     public class CurlMulti : IDisposable
     {
+        public delegate void MultiPerformCallback(CURLE result, CurlMulti multi);
+
         private IntPtr multiPtr;
 
-        private Dictionary<IntPtr, CurlEasy> workingEasies = new Dictionary<IntPtr, CurlEasy>();
+        private Dictionary<IntPtr, MultiPerformCallback> workingEasies = new Dictionary<IntPtr, MultiPerformCallback>();
 
         public CurlMulti(IntPtr ptr = default(IntPtr))
         {
@@ -29,27 +30,33 @@ namespace CurlUnity
             Lib.curl_multi_cleanup(multiPtr);
         }
 
-        public void AddHandle(CurlEasy easy)
+        public void AddHandle(CurlEasy easy, MultiPerformCallback callback)
         {
-            workingEasies[(IntPtr)easy] = easy;
+            workingEasies[(IntPtr)easy] = callback;
             Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
+            CurlMultiUpdater.Instance.AddMulti(this);
+        }
+
+        public void RemoveHandle(IntPtr easyPtr)
+        {
+            workingEasies.Remove(easyPtr);
+            Lib.curl_multi_remove_handle(multiPtr, easyPtr);
+
+            if (workingEasies.Count == 0)
+            {
+                CurlMultiUpdater.Instance.RemoveMulti(this);
+            }
         }
 
         public void RemoveHandle(CurlEasy easy)
         {
-            workingEasies.Remove((IntPtr)easy);
-            Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
+            RemoveHandle((IntPtr)easy);
         }
 
-        public CURLM Perform(ref long running)
-        {
-            return Lib.curl_multi_perform(multiPtr, ref running);
-        }
-
-        public void Tick()
+        internal void Tick()
         {
             long running = 0;
-            Perform(ref running);
+            Lib.curl_multi_perform(multiPtr, ref running);
 
             long index = 0;
             while (true)
@@ -60,10 +67,10 @@ namespace CurlUnity
                     var msg = (CurlMsg)msgPtr;
                     if (msg.message == CURLMSG.DONE)
                     {
-                        if (workingEasies.TryGetValue(msg.easyPtr, out var easy))
+                        if (workingEasies.TryGetValue(msg.easyPtr, out var callback))
                         {
-                            RemoveHandle(easy);
-                            easy.OnPerformComplete(msg.result, this);
+                            RemoveHandle(msg.easyPtr);
+                            callback(msg.result, this);
                         }
                     }
                 }
