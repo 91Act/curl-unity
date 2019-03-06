@@ -8,8 +8,8 @@ namespace CurlUnity
         public delegate void MultiPerformCallback(CURLE result, CurlMulti multi);
 
         private IntPtr multiPtr;
-
-        private Dictionary<IntPtr, MultiPerformCallback> workingEasies = new Dictionary<IntPtr, MultiPerformCallback>();
+        private CurlShare share;
+        private Dictionary<IntPtr, CurlEasy> workingEasies = new Dictionary<IntPtr, CurlEasy>();
 
         public CurlMulti(IntPtr ptr = default(IntPtr))
         {
@@ -23,6 +23,10 @@ namespace CurlUnity
             }
 
             Lib.curl_multi_setopt_int(multiPtr, CURLMOPT.PIPELINING, (long)CURLPIPE.MULTIPLEX);
+
+            share = new CurlShare();
+
+            share.SetOpt(CURLSHOPT.SHARE, (long)CURLLOCKDATA.SSL_SESSION);
         }
 
         public void Dispose()
@@ -30,27 +34,23 @@ namespace CurlUnity
             Lib.curl_multi_cleanup(multiPtr);
         }
 
-        public void AddHandle(CurlEasy easy, MultiPerformCallback callback)
+        public void AddHandle(CurlEasy easy)
         {
-            workingEasies[(IntPtr)easy] = callback;
+            workingEasies[(IntPtr)easy] = easy;
             Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
+            easy.SetOpt(CURLOPT.SHARE, (IntPtr)share);
             CurlMultiUpdater.Instance.AddMulti(this);
         }
 
-        public void RemoveHandle(IntPtr easyPtr)
+        public void RemoveHandle(CurlEasy easy)
         {
-            workingEasies.Remove(easyPtr);
-            Lib.curl_multi_remove_handle(multiPtr, easyPtr);
+            workingEasies.Remove((IntPtr)easy);
+            Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
 
             if (workingEasies.Count == 0)
             {
                 CurlMultiUpdater.Instance.RemoveMulti(this);
             }
-        }
-
-        public void RemoveHandle(CurlEasy easy)
-        {
-            RemoveHandle((IntPtr)easy);
         }
 
         internal void Tick()
@@ -67,10 +67,10 @@ namespace CurlUnity
                     var msg = (CurlMsg)msgPtr;
                     if (msg.message == CURLMSG.DONE)
                     {
-                        if (workingEasies.TryGetValue(msg.easyPtr, out var callback))
+                        if (workingEasies.TryGetValue(msg.easyPtr, out var easy))
                         {
-                            RemoveHandle(msg.easyPtr);
-                            callback(msg.result, this);
+                            RemoveHandle(easy);
+                            easy.OnMultiPerform(msg.result, this);
                         }
                     }
                 }
@@ -79,6 +79,16 @@ namespace CurlUnity
                     break;
                 }
             }
+        }
+
+        public static explicit operator IntPtr(CurlMulti multi)
+        {
+            return multi.multiPtr;
+        }
+
+        public static explicit operator CurlMulti(IntPtr ptr)
+        {
+            return new CurlMulti(ptr);
         }
     }
 }

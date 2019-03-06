@@ -39,44 +39,44 @@ namespace CurlUnity
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_easy_init();
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void curl_easy_cleanup(IntPtr handle);
+        public static extern void curl_easy_cleanup(IntPtr easyPtr);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void curl_easy_reset(IntPtr handle);
+        public static extern void curl_easy_reset(IntPtr easyPtr);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_easy_duphandle(IntPtr handle);
+        public static extern IntPtr curl_easy_duphandle(IntPtr easyPtr);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_int(IntPtr handle, CURLOPT option, long arg);
+        public static extern CURLE curl_easy_setopt_int(IntPtr easyPtr, CURLOPT option, long arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_int(IntPtr handle, CURLOPT option, bool arg);
+        public static extern CURLE curl_easy_setopt_int(IntPtr easyPtr, CURLOPT option, bool arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_str(IntPtr handle, CURLOPT option, string arg);
+        public static extern CURLE curl_easy_setopt_str(IntPtr easyPtr, CURLOPT option, string arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_ptr(IntPtr handle, CURLOPT option, IntPtr arg);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, IntPtr arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_ptr(IntPtr handle, CURLOPT option, byte[] arg);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, byte[] arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_ptr(IntPtr handle, CURLOPT option, Delegates.WriteFunction arg);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, Delegates.WriteFunction arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_ptr(IntPtr handle, CURLOPT option, Delegates.HeaderFunction arg);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, Delegates.HeaderFunction arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_ptr(IntPtr handle, CURLOPT option, Delegates.DebugFunction arg);
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, Delegates.DebugFunction arg);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_perform(IntPtr handle);
+        public static extern CURLE curl_easy_perform(IntPtr easyPtr);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo_ptr(IntPtr handle, CURLINFO info, ref long arg);
+        public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref long arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo_ptr(IntPtr handle, CURLINFO info, ref double arg);
+        public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref double arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo_ptr(IntPtr handle, CURLINFO info, ref IntPtr arg);
+        public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref IntPtr arg);
         
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_easy_escape(IntPtr handle, string data, long length = 0);
+        public static extern IntPtr curl_easy_escape(IntPtr easyPtr, string data, long length = 0);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_easy_unescape(IntPtr handle, string data, long length = 0);
+        public static extern IntPtr curl_easy_unescape(IntPtr easyPtr, string data, long length = 0);
 
         #endregion
 
@@ -84,21 +84,42 @@ namespace CurlUnity
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_multi_init();
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLM curl_multi_cleanup(IntPtr mhandle);
+        public static extern CURLM curl_multi_cleanup(IntPtr multiPtr);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_multi_add_handle(IntPtr mhandle, IntPtr ehandle);
+        public static extern CURLE curl_multi_add_handle(IntPtr multiPtr, IntPtr easyPtr);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLM curl_multi_remove_handle(IntPtr mhandle, IntPtr ehandle);
+        public static extern CURLM curl_multi_remove_handle(IntPtr multiPtr, IntPtr easyPtr);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLM curl_multi_perform(IntPtr mhandle, ref long running);
+        public static extern CURLM curl_multi_perform(IntPtr multiPtr, ref long running);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_multi_info_read(IntPtr mhandle, ref long messages);
+        public static extern IntPtr curl_multi_info_read(IntPtr multiPtr, ref long messages);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_multi_setopt_int(IntPtr mhandle, CURLMOPT opt, long value);
+        public static extern IntPtr curl_multi_setopt_int(IntPtr multiPtr, CURLMOPT opt, long value);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_multi_setopt_str(IntPtr mhandle, CURLMOPT opt, string value);
+        public static extern IntPtr curl_multi_setopt_int(IntPtr multiPtr, CURLMOPT opt, bool value);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_multi_setopt_ptr(IntPtr mhandle, CURLMOPT opt, IntPtr value);
+        public static extern IntPtr curl_multi_setopt_str(IntPtr multiPtr, CURLMOPT opt, string value);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr curl_multi_setopt_ptr(IntPtr multiPtr, CURLMOPT opt, IntPtr value);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr curl_multi_setopt_ptr(IntPtr multiPtr, CURLMOPT opt, byte[] value);
+        #endregion
+
+        #region share interface
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr curl_share_init();
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_setopt_int(IntPtr sharePtr, CURLSHOPT option, long arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_setopt_int(IntPtr sharePtr, CURLSHOPT option, bool arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_setopt_str(IntPtr sharePtr, CURLSHOPT option, string arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_setopt_ptr(IntPtr sharePtr, CURLSHOPT option, IntPtr arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_setopt_ptr(IntPtr sharePtr, CURLSHOPT option, byte[] arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_cleanup(IntPtr sharePtr);
         #endregion
     }
 }

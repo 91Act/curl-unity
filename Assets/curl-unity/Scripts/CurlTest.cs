@@ -1,30 +1,33 @@
-﻿using System;
+﻿using CurlUnity;
+using System;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using UnityEngine;
 
-namespace CurlUnity
+public class CurlTest : MonoBehaviour
 {
-    public class CurlTest : MonoBehaviour
+    void Start()
     {
-        void Start()
+        var multi = new CurlMulti();
+
+        var asset = Resources.Load<TextAsset>("urls");
+        var sr = new StringReader(asset.text);
+
+        string line;
+        while ((line = sr.ReadLine()) != null)
         {
             var easy = new CurlEasy();
-            easy.url = "https://nghttp2.org";
+            easy.uri = new Uri(line);
             easy.useHttp2 = true;
-            easy.timeout = 5000;
-
-            var multi = new CurlMulti();
+            //easy.outputPath = Path.Combine("Downloads", Path.GetFileName(easy.uri.LocalPath));
             easy.MultiPerform(multi, OnPerformCallback);
         }
+    }
 
-        void OnPerformCallback(CURLE result, CurlEasy easy)
+    void OnPerformCallback(CURLE result, CurlEasy easy)
+    {
+        if (result == CURLE.OK)
         {
-            if (result == CURLE.OK)
-            {
-                Debug.Log(Encoding.UTF8.GetString(easy.inData));
-            }
+            Debug.Log($"Perform finished: {easy.uri}");
         }
     }
 }

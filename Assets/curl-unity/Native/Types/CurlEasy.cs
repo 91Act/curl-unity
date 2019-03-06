@@ -12,11 +12,12 @@ namespace CurlUnity
     {
         public delegate void PerformCallback(CURLE result, CurlEasy easy);
 
-        public string url { get; set; }
+        public Uri uri { get; set; }
         public string method { get; set; } = "GET";
         public string contentType { get; set; } = "application/text";
         public string outputPath { get; set; }
-        public int timeout { get; set; } = 10000;
+        public int timeout { get; set; } = 0;
+        public int connectionTimeout { get; set; } = 5000;
         public int maxRetryCount { get; set; } = 5;
         public bool useHttp2 { get; set; }
         public bool insecure { get; set; }
@@ -80,19 +81,9 @@ namespace CurlUnity
         }
 
         #region SetOpt
-        public CURLE SetOpt(CURLOPT options, IntPtr value)
+        public CURLE SetOpt(CURLOPT options, long value)
         {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
-        }
-
-        public CURLE SetOpt(CURLOPT options, string value)
-        {
-            return Lib.curl_easy_setopt_str(easyPtr, options, value);
-        }
-
-        public CURLE SetOpt(CURLOPT options, byte[] value)
-        {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+            return Lib.curl_easy_setopt_int(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, bool value)
@@ -100,9 +91,19 @@ namespace CurlUnity
             return Lib.curl_easy_setopt_int(easyPtr, options, value);
         }
 
-        public CURLE SetOpt(CURLOPT options, long value)
+        public CURLE SetOpt(CURLOPT options, string value)
         {
-            return Lib.curl_easy_setopt_int(easyPtr, options, value);
+            return Lib.curl_easy_setopt_str(easyPtr, options, value);
+        }
+
+        public CURLE SetOpt(CURLOPT options, IntPtr value)
+        {
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+        }
+
+        public CURLE SetOpt(CURLOPT options, byte[] value)
+        {
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.WriteFunction value)
@@ -203,7 +204,7 @@ namespace CurlUnity
                 performCallback = callback;
 
                 Prepare();
-                multi.AddHandle(this, OnMultiPerformCallback);
+                multi.AddHandle(this);
             }
             else
             {
@@ -211,7 +212,7 @@ namespace CurlUnity
             }
         }
 
-        private void OnMultiPerformCallback(CURLE result, CurlMulti multi)
+        internal void OnMultiPerform(CURLE result, CurlMulti multi)
         {
             var done = ProcessResponse(result);
 
@@ -225,7 +226,7 @@ namespace CurlUnity
             else
             {
                 Prepare();
-                multi.AddHandle(this, OnMultiPerformCallback);
+                multi.AddHandle(this);
             }
         }
 
@@ -236,7 +237,7 @@ namespace CurlUnity
 
             thisHandle = GCHandle.Alloc(this);
 
-            SetOpt(CURLOPT.URL, url);
+            SetOpt(CURLOPT.URL, uri.AbsoluteUri);
             SetOpt(CURLOPT.CUSTOMREQUEST, method);
 
             if (useHttp2)
@@ -286,7 +287,7 @@ namespace CurlUnity
             else
             {
                 var dir = Path.GetDirectoryName(outputPath);
-                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
                 responseBodyStream = new FileStream(outputPath, FileMode.OpenOrCreate);
             }
             SetOpt(CURLOPT.WRITEFUNCTION, (Delegates.WriteFunction)WriteFunction);
@@ -302,6 +303,7 @@ namespace CurlUnity
             }
 
             // Timeout
+            SetOpt(CURLOPT.CONNECTTIMEOUT_MS, connectionTimeout);
             SetOpt(CURLOPT.TIMEOUT_MS, timeout);
         }
 
@@ -346,13 +348,9 @@ namespace CurlUnity
                         break;
                     }
                 }
-                responseHeaderStream.Close();
-                responseHeaderStream = null;
 
                 var ms = responseBodyStream as MemoryStream;
                 inData = ms?.ToArray();
-                responseBodyStream.Close();
-                responseBodyStream = null;
 
                 if (status == 200)
                 {
@@ -362,14 +360,19 @@ namespace CurlUnity
                 {
                     if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
                     {
-                        url = location;
+                        uri = new Uri(location);
                     }
                 }
             }
             else
             {
-                Debug.LogWarning($"Failed to request: {url}, reason: {result}");
+                Debug.LogWarning($"Failed to request: {uri}, reason: {result}");
             }
+
+            responseHeaderStream.Close();
+            responseHeaderStream = null;
+            responseBodyStream.Close();
+            responseBodyStream = null;
 
             return done;
         }
