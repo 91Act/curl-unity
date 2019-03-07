@@ -18,8 +18,9 @@ public class CurlTest : MonoBehaviour
             var easy = new CurlEasy();
             easy.uri = new Uri(line);
             easy.useHttp2 = true;
-            //easy.outputPath = Path.Combine("Downloads", Path.GetFileName(easy.uri.LocalPath));
-            easy.MultiPerform(multi, OnPerformCallback);
+            easy.debug = true;
+            easy.performCallback = OnPerformCallback;
+            easy.MultiPerform(multi);
         }
     }
 

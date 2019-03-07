@@ -461,7 +461,7 @@ namespace CurlUnity
                 sb.AppendLine("<b><color=lightblue>Request Headers</color></b>");
                 foreach (var entry in outHeader)
                 {
-                    sb.AppendLine($"<b><color=grey>[{entry.Key}]</color></b> {entry.Value}");
+                    sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
                 }
             }
 
@@ -476,7 +476,7 @@ namespace CurlUnity
                 sb.AppendLine("<b><color=lightblue>Response Headers</color></b>");
                 foreach (var entry in inHeader)
                 {
-                    sb.AppendLine($"<b><color=grey>[{entry.Key}]</color></b> {entry.Value}");
+                    sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
                 }
             }
 
