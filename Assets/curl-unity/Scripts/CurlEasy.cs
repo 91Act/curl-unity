@@ -92,6 +92,18 @@ namespace CurlUnity
 
         private GCHandle thisHandle;
 
+#if !ALLOW_UNSAFE
+        private byte[] buffer;
+        private byte[] AcquireBuffer(long size)
+        {
+            if (buffer == null || buffer.Length < size)
+            {
+                buffer = new byte[size];
+            }
+            return buffer;
+        }
+#endif
+
         private static string s_capath;
 
         static CurlEasy()
@@ -202,10 +214,7 @@ namespace CurlUnity
             var result = Lib.curl_easy_getinfo_ptr(easyPtr, info, ref ptr);
             if (ptr != IntPtr.Zero)
             {
-                unsafe
-                {
-                    value = Marshal.PtrToStringAnsi((IntPtr)ptr.ToPointer());
-                }
+                value = Marshal.PtrToStringAnsi(ptr);
             }
             return result;
         }
@@ -328,9 +337,9 @@ namespace CurlUnity
             // Fill request header
             var requestHeader = new CurlSlist(IntPtr.Zero);
             requestHeader.Append($"Content-Type:{contentType}");
-            if (this.userHeader != null)
+            if (userHeader != null)
             {
-                foreach (var entry in this.userHeader)
+                foreach (var entry in userHeader)
                 {
                     requestHeader.Append(entry.Key + ":" + entry.Value);
                 }
@@ -527,27 +536,39 @@ namespace CurlUnity
         [AOT.MonoPInvokeCallback(typeof(Delegates.HeaderFunction))]
         private static int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata)
         {
+            size = size * nmemb;
+            var thiz = ((GCHandle)userdata).Target as CurlEasy;
+#if ALLOW_UNSAFE
             unsafe
             {
-                size = size * nmemb;
                 var ums = new UnmanagedMemoryStream((byte*)ptr, size);
-                var thiz = ((GCHandle)userdata).Target as CurlEasy;
                 ums.CopyTo(thiz.responseHeaderStream);
-                return size;
             }
+#else
+            var bytes = thiz.AcquireBuffer(size);
+            Marshal.Copy(ptr, bytes, 0, size);
+            thiz.responseHeaderStream.Write(bytes, 0, size);
+#endif
+            return size;
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.WriteFunction))]
         private static int WriteFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata)
         {
+            size = size * nmemb;
+            var thiz = ((GCHandle)userdata).Target as CurlEasy;
+#if ALLOW_UNSAFE
             unsafe
             {
-                size = size * nmemb;
                 var ums = new UnmanagedMemoryStream((byte*)ptr, size);
-                var thiz = ((GCHandle)userdata).Target as CurlEasy;
                 ums.CopyTo(thiz.responseBodyStream);
-                return size;
             }
+#else
+            var bytes = thiz.AcquireBuffer(size);
+            Marshal.Copy(ptr, bytes, 0, size);
+            thiz.responseBodyStream.Write(bytes, 0, size);
+#endif
+            return size;
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.DebugFunction))]
@@ -555,32 +576,36 @@ namespace CurlUnity
         {
             if (type == CURLINFODEBUG.HEADER_OUT)
             {
+                StreamReader sr = null;
+                var thiz = ((GCHandle)userdata).Target as CurlEasy;
+#if ALLOW_UNSAFE
                 unsafe
                 {
                     var ums = new UnmanagedMemoryStream((byte*)data, size);
-                    var sr = new StreamReader(ums);
+                    sr = new StreamReader(ums);
+                }
+#else
+                var bytes = thiz.AcquireBuffer(size);
+                Marshal.Copy(ptr, bytes, 0, size);
+                sr = new StreamReader(new MemoryStream(bytes));
+#endif
+                // Handle first line
+                var firstLine = sr.ReadLine();
 
-                    // Handle first line
+                while (true)
+                {
+                    var line = sr.ReadLine();
+                    if (!string.IsNullOrEmpty(line))
                     {
-                        var firstLine = sr.ReadLine();
+                        var index = line.IndexOf(':');
+                        if (thiz.outHeader == null) thiz.outHeader = new Dictionary<string, string>();
+                        var key = line.Substring(0, index).Trim();
+                        var value = line.Substring(index + 1).Trim();
+                        thiz.outHeader[key] = value;
                     }
-
-                    while (true)
+                    else
                     {
-                        var line = sr.ReadLine();
-                        if (!string.IsNullOrEmpty(line))
-                        {
-                            var index = line.IndexOf(':');
-                            var thiz = ((GCHandle)userdata).Target as CurlEasy;
-                            if (thiz.outHeader == null) thiz.outHeader = new Dictionary<string, string>();
-                            var key = line.Substring(0, index).Trim();
-                            var value = line.Substring(index + 1).Trim();
-                            thiz.outHeader[key] = value;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        break;
                     }
                 }
             }

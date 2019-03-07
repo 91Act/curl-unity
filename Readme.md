@@ -1,6 +1,6 @@
 # curl-unity
 
-This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) with [http2](https://github.com/curl/curl)/[openssl](https://github.com/openssl/openssl) enabled.
+This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) with [http2](https://github.com/nghttp2/nghttp2)/[openssl](https://github.com/openssl/openssl) enabled.
 
 ## Supported platforms
 
@@ -21,8 +21,8 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 
 ## Requirements
 
-* [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) is requried for macOS/iOS/Android. It could be installed via `brew install pkg-config` on macOS.
 * [CMake](https://cmake.org/download/) is required for all platforms.
+* [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) is requried for macOS/iOS/Android. It could be installed via `brew install pkg-config` on macOS.
 * [NDK r16b](https://developer.android.com/ndk/downloads/older_releases.html) is required for Android.
 * Xcode is required for macOS/iOS.
 * Visual Studio 2017 and [Perl](https://www.activestate.com/products/activeperl/downloads/) is required for Windows.
@@ -49,9 +49,61 @@ Build `curl.bundle` for macOS. Please use this script on macOS.
 
 Build `curl.dll` for Windows. Please use this script on Windows.
 
+# Install
+
+Copy `Assets/curl-unity` to anywhere under your Unity project and done.
+
+Besides, for a better performance you could enable `Allow unsafe code` and add `ALLOW_UNSAFE` to the `Scripting Define Symbols` in the project settings.
+
+![project settings](doc/project_settings.png)
+
 # Usage
 
-## Blocking perform
+## Non-blocking multi perform (single thread, recommended)
+
+> Only by using this multi perform that could take the advantage of HTTP/2 multiplexing feature.
+
+```csharp
+void Start()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        var easy = new CurlEasy();
+        easy.url = "https://nghttp2.org";
+        easy.useHttp2 = true;
+        easy.timeout = 5000;
+        easy.performCallback = OnPerformCallback;
+
+        // You could also create your own CurlMulti instance
+        easy.MultiPerform(CurlMulti.DefaultMulti);
+    }
+}
+
+void OnPerformCallback(CURLE result, CurlEasy easy)
+{
+    if (result == CURLE.OK)
+    {
+        Debug.Log(easy.inText);
+    }
+}
+```
+
+## Non-blocking easy perform (multi thread, experimental, lock is not implemented yet)
+```csharp
+async void Start()
+{
+    var easy = new CurlEasy();
+    easy.url = "https://nghttp2.org";
+    easy.useHttp2 = true;
+    easy.timeout = 5000;
+    if (await easy.PerformAsync() == CURLE.OK)
+    {
+        Debug.Log(easy.inText);
+    }
+}
+```
+
+## Blocking easy perform
 
 ```csharp
 void Start()
@@ -62,46 +114,7 @@ void Start()
     easy.timeout = 5000;
     if (easy.Perform() == CURLE.OK)
     {
-        Debug.Log(Encoding.UTF8.GetString(easy.inData));
-    }
-}
-```
-
-## Non-Blocking perform via multi thread
-```csharp
-void Start()
-{
-    var easy = new CurlEasy();
-    easy.url = "https://nghttp2.org";
-    easy.useHttp2 = true;
-    easy.timeout = 5000;
-    if (await easy.PerformAsync() == CURLE.OK)
-    {
-        Debug.Log(Encoding.UTF8.GetString(easy.inData));
-    }
-}
-```
-
-
-## Non-Blocking perform via single thread (Recommended)
-
-```csharp
-void Start()
-{
-    var easy = new CurlEasy();
-    easy.url = "https://nghttp2.org";
-    easy.useHttp2 = true;
-    easy.timeout = 5000;
-
-    var multi = new CurlMulti();
-    easy.MultiPerform(multi, OnPerformCallback);
-}
-
-void OnPerformCallback(CURLE result, CurlEasy easy)
-{
-    if (result == CURLE.OK)
-    {
-        Debug.Log(Encoding.UTF8.GetString(easy.inData));
+        Debug.Log(easy.inText);
     }
 }
 ```

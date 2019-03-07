@@ -22,38 +22,31 @@ namespace CurlUnity
 
         public void Dispose()
         {
-            unsafe
+            if (ptr != IntPtr.Zero)
             {
-                if (ptr != IntPtr.Zero)
-                {
-                    Lib.curl_slist_free_all((IntPtr)(ptr));
-                    ptr = IntPtr.Zero;
-                }
+                Lib.curl_slist_free_all(ptr);
+                ptr = IntPtr.Zero;
             }
         }
 
         public List<string> GetStrings()
         {
             var result = new List<string>();
-            unsafe
+
+            var iter = ptr;
+            while (iter != IntPtr.Zero)
             {
-                var iter = (__curl_slist*)(ptr);
-                while(iter != null)
-                {
-                    result.Add(Marshal.PtrToStringAnsi(iter->data));
-                    iter = (__curl_slist*)(iter->next);
-                }
+                var slist = Marshal.PtrToStructure<__curl_slist>(iter);
+                result.Add(Marshal.PtrToStringAnsi(slist.data));
+                iter = slist.next;
             }
+
             return result;
         }
 
         public void Append(string value)
         {
-            unsafe
-            {
-                var head = (__curl_slist*)(ptr);
-                ptr = Lib.curl_slist_append((IntPtr)head, value);
-            }
+            ptr = Lib.curl_slist_append(ptr, value);
         }
 
         public static explicit operator IntPtr(CurlSlist slist)
