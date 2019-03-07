@@ -19,7 +19,7 @@ namespace CurlUnity
         public int timeout { get; set; } = 0;
         public int connectionTimeout { get; set; } = 5000;
         public int maxRetryCount { get; set; } = 5;
-        public bool useHttp2 { get; set; }
+        public bool useHttp2 { get; set; } = true;
         public bool insecure { get; set; }
         public byte[] outData { get; set; }
         public byte[] inData { get; private set; }
@@ -27,10 +27,61 @@ namespace CurlUnity
         public int status { get; private set; }
         public string message { get; private set; }
         public bool running { get; private set; }
+        public PerformCallback performCallback { get; set; }
         public bool debug { get; set; }
-        public PerformCallback performCallback;
+
+        public string outText
+        {
+            get
+            {
+                return outData != null ? Encoding.UTF8.GetString(outData) : null;
+            }
+            set
+            {
+                outData = value != null ? Encoding.UTF8.GetBytes(value) : null;
+            }
+        }
+
+        public string inText
+        {
+            get
+            {
+                return inData != null ? Encoding.UTF8.GetString(inData) : null;
+            }
+            set
+            {
+                inData = value != null ? Encoding.UTF8.GetBytes(value) : null;
+            }
+        }
+
+        public long outDataLength
+        {
+            get
+            {
+                GetInfo(CURLINFO.CONTENT_LENGTH_UPLOAD, out double uploadLength);
+                return (long)uploadLength;
+            }
+        }
+
+        public long inDataLength
+        {
+            get
+            {
+                GetInfo(CURLINFO.CONTENT_LENGTH_DOWNLOAD, out double downloadLength);
+                return (long)downloadLength;
+            }
+        }
+
+        public long recievedDataLength
+        {
+            get
+            {
+                return responseBodyStream != null ? responseBodyStream.Length : 0;
+            }
+        }
 
         private IntPtr easyPtr;
+        private CurlMulti multi;
         private int retryCount;
         private Dictionary<string, string> userHeader;
         private Dictionary<string, string> outHeader;
@@ -65,9 +116,18 @@ namespace CurlUnity
             }
         }
 
+        public void CleanUp()
+        {
+            if (easyPtr != IntPtr.Zero)
+            {
+                Lib.curl_easy_cleanup(easyPtr);
+                easyPtr = IntPtr.Zero;
+            }
+        }
+
         public void Dispose()
         {
-            Lib.curl_easy_cleanup(easyPtr);
+            CleanUp();
         }
 
         public void Reset()
@@ -195,16 +255,16 @@ namespace CurlUnity
             return await Task.Run(Perform);
         }
 
-        public void MultiPerform(CurlMulti multi, PerformCallback callback)
+        public void MultiPerform(CurlMulti _multi)
         {
             if (!running)
             {
                 running = true;
                 retryCount = maxRetryCount;
-                performCallback = callback;
+                multi = _multi;
 
                 Prepare();
-                multi.AddHandle(this);
+                multi.AddEasy(this);
             }
             else
             {
@@ -212,7 +272,17 @@ namespace CurlUnity
             }
         }
 
-        internal void OnMultiPerform(CURLE result, CurlMulti multi)
+        public void Abort()
+        {
+            if (multi != null)
+            {
+                multi.RemoveEasy(this);
+                multi = null;
+            }
+            performCallback = null;
+        }
+
+        public void OnMultiPerform(CURLE result, CurlMulti multi)
         {
             var done = ProcessResponse(result);
 
@@ -226,7 +296,7 @@ namespace CurlUnity
             else
             {
                 Prepare();
-                multi.AddHandle(this);
+                multi.AddEasy(this);
             }
         }
 
@@ -382,11 +452,9 @@ namespace CurlUnity
             var sb = new StringBuilder();
 
             GetInfo(CURLINFO.EFFECTIVE_URL, out string effectiveUrl);
-            GetInfo(CURLINFO.CONTENT_LENGTH_UPLOAD, out double updateSize);
-            GetInfo(CURLINFO.CONTENT_LENGTH_DOWNLOAD, out double downloadSize);
             GetInfo(CURLINFO.TOTAL_TIME, out double time);
 
-            sb.AppendLine($"{effectiveUrl} [ {method.ToUpper()} ] [ {httpVersion} {status} {message} ] [ {updateSize}({(outData != null ? outData.Length : 0)}) | {downloadSize}({(inData != null ? inData.Length : 0)}) ] [ {time * 1000} ms ]");
+            sb.AppendLine($"{effectiveUrl} [ {method.ToUpper()} ] [ {httpVersion} {status} {message} ] [ {outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) ] [ {time * 1000} ms ]");
 
             if (outHeader != null)
             {

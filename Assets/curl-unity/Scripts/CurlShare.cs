@@ -18,9 +18,19 @@ namespace CurlUnity
             }
         }
 
+        public void CleanUp()
+        {
+            if (sharePtr != IntPtr.Zero)
+            {
+                Lib.curl_share_cleanup(sharePtr);
+                sharePtr = IntPtr.Zero;
+            }
+        }
+
         public void Dispose()
         {
-            Lib.curl_share_cleanup(sharePtr);
+            CleanUp();
+
         }
 
         public CURLSH SetOpt(CURLSHOPT options, long value)

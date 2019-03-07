@@ -11,6 +11,20 @@ namespace CurlUnity
         private CurlShare share;
         private Dictionary<IntPtr, CurlEasy> workingEasies = new Dictionary<IntPtr, CurlEasy>();
 
+        private static CurlMulti defaultMulti;
+
+        public static CurlMulti DefaultMulti
+        {
+            get
+            {
+                if (defaultMulti == null)
+                {
+                    defaultMulti = new CurlMulti();
+                }
+                return defaultMulti;
+            }
+        }
+
         public CurlMulti(IntPtr ptr = default(IntPtr))
         {
             if (ptr != IntPtr.Zero)
@@ -29,12 +43,22 @@ namespace CurlUnity
             share.SetOpt(CURLSHOPT.SHARE, (long)CURLLOCKDATA.SSL_SESSION);
         }
 
-        public void Dispose()
+        public void CleanUp()
         {
-            Lib.curl_multi_cleanup(multiPtr);
+            if (multiPtr != IntPtr.Zero)
+            {
+                Lib.curl_multi_cleanup(multiPtr);
+                multiPtr = IntPtr.Zero;
+            }
         }
 
-        public void AddHandle(CurlEasy easy)
+        public void Dispose()
+        {
+            CleanUp();
+
+        }
+
+        public void AddEasy(CurlEasy easy)
         {
             workingEasies[(IntPtr)easy] = easy;
             Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
@@ -42,7 +66,7 @@ namespace CurlUnity
             CurlMultiUpdater.Instance.AddMulti(this);
         }
 
-        public void RemoveHandle(CurlEasy easy)
+        public void RemoveEasy(CurlEasy easy)
         {
             workingEasies.Remove((IntPtr)easy);
             Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
@@ -69,7 +93,7 @@ namespace CurlUnity
                     {
                         if (workingEasies.TryGetValue(msg.easyPtr, out var easy))
                         {
-                            RemoveHandle(easy);
+                            RemoveEasy(easy);
                             easy.OnMultiPerform(msg.result, this);
                         }
                     }
