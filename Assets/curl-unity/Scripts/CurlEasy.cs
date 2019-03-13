@@ -586,8 +586,8 @@ namespace CurlUnity
                 }
 #else
                 var bytes = thiz.AcquireBuffer(size);
-                Marshal.Copy(ptr, bytes, 0, size);
-                sr = new StreamReader(new MemoryStream(bytes));
+                Marshal.Copy(data, bytes, 0, size);
+                sr = new StreamReader(new MemoryStream(bytes, 0, size));
 #endif
                 // Handle first line
                 var firstLine = sr.ReadLine();
@@ -598,10 +598,17 @@ namespace CurlUnity
                     if (!string.IsNullOrEmpty(line))
                     {
                         var index = line.IndexOf(':');
-                        if (thiz.outHeader == null) thiz.outHeader = new Dictionary<string, string>();
-                        var key = line.Substring(0, index).Trim();
-                        var value = line.Substring(index + 1).Trim();
-                        thiz.outHeader[key] = value;
+                        if (index >= 0)
+                        {
+                            if (thiz.outHeader == null) thiz.outHeader = new Dictionary<string, string>();
+                            var key = line.Substring(0, index).Trim();
+                            var value = line.Substring(index + 1).Trim();
+                            thiz.outHeader[key] = value;
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Invalid header: " + line);
+                        }
                     }
                     else
                     {
