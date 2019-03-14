@@ -19,7 +19,7 @@ namespace CurlUnity
         public int timeout { get; set; } = 0;
         public int connectionTimeout { get; set; } = 5000;
         public int maxRetryCount { get; set; } = 5;
-        public bool useHttp2 { get; set; } = true;
+        public bool forceHttp2 { get; set; }
         public bool insecure { get; set; }
         public byte[] outData { get; set; }
         public byte[] inData { get; private set; }
@@ -253,7 +253,7 @@ namespace CurlUnity
             }
             else
             {
-                Debug.LogError("Can't preform a running handle again!");
+                CurlLog.LogError("Can't preform a running handle again!");
             }
 
             return result;
@@ -277,7 +277,7 @@ namespace CurlUnity
             }
             else
             {
-                Debug.LogError("Can't preform a running handle again!");
+                CurlLog.LogError("Can't preform a running handle again!");
             }
         }
 
@@ -319,7 +319,7 @@ namespace CurlUnity
             SetOpt(CURLOPT.URL, uri.AbsoluteUri);
             SetOpt(CURLOPT.CUSTOMREQUEST, method);
 
-            if (useHttp2)
+            if (forceHttp2 || uri.Scheme == "https")
             {
                 SetOpt(CURLOPT.HTTP_VERSION, (long)HTTPVersion.VERSION_2_0);
                 SetOpt(CURLOPT.PIPEWAIT, true);
@@ -445,7 +445,7 @@ namespace CurlUnity
             }
             else
             {
-                Debug.LogWarning($"Failed to request: {uri}, reason: {result}");
+                CurlLog.LogWarning($"Failed to request: {uri}, reason: {result}");
             }
 
             responseHeaderStream.Close();
@@ -463,39 +463,52 @@ namespace CurlUnity
             GetInfo(CURLINFO.EFFECTIVE_URL, out string effectiveUrl);
             GetInfo(CURLINFO.TOTAL_TIME, out double time);
 
+#if UNITY_EDITOR
+            var colorize = true;
+#else
+            var colorize = false;
+#endif
+
             sb.AppendLine($"{effectiveUrl} [ {method.ToUpper()} ] [ {httpVersion} {status} {message} ] [ {outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) ] [ {time * 1000} ms ]");
 
             if (outHeader != null)
             {
-                sb.AppendLine("<b><color=lightblue>Request Headers</color></b>");
+                if (colorize) sb.AppendLine("<b><color=lightblue>Request Headers</color></b>");
+                else sb.AppendLine("-- Request Headers --");
+
                 foreach (var entry in outHeader)
                 {
-                    sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                    if (colorize) sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                    else sb.AppendLine($"[{entry.Key}] {entry.Value}");
                 }
             }
 
             if (outData != null && outData.Length > 0)
             {
-                sb.AppendLine($"<b><color=lightblue>Request Body</color></b> [ {outData.Length} ]");
+                if (colorize) sb.AppendLine($"<b><color=lightblue>Request Body</color></b> [ {outData.Length} ]");
+                else sb.AppendLine($"-- Request Body -- [ {outData.Length} ]");
                 sb.AppendLine(Encoding.UTF8.GetString(outData, 0, Math.Min(outData.Length, 0x400)));
             }
 
             if (inHeader != null)
             {
-                sb.AppendLine("<b><color=lightblue>Response Headers</color></b>");
+                if (colorize) sb.AppendLine("<b><color=lightblue>Response Headers</color></b>");
+                else sb.AppendLine("-- Response Headers --");
                 foreach (var entry in inHeader)
                 {
-                    sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                    if (colorize) sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                    else sb.AppendLine($"[{entry.Key}] {entry.Value}");
                 }
             }
 
             if (inData != null && inData.Length > 0)
             {
-                sb.AppendLine($"<b><color=lightblue>Response Body</color></b> [ {inData.Length} ]");
+                if (colorize) sb.AppendLine($"<b><color=lightblue>Response Body</color></b> [ {inData.Length} ]");
+                else sb.AppendLine($"-- Response Body -- [ {inData.Length} ]");
                 sb.AppendLine(Encoding.UTF8.GetString(inData, 0, Math.Min(inData.Length, 0x400)));
             }
 
-            Debug.Log(sb.ToString());
+            CurlLog.Log(sb.ToString());
         }
 
         public Dictionary<string, string> GetAllRequestHeaders()
@@ -607,7 +620,7 @@ namespace CurlUnity
                         }
                         else
                         {
-                            Debug.LogWarning("Invalid header: " + line);
+                            CurlLog.LogWarning($"Invalid header: {line}");
                         }
                     }
                     else
