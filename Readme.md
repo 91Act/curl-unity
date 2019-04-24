@@ -61,7 +61,7 @@ Besides, for a better performance you could enable `Allow unsafe code` and add `
 
 # Usage
 
-## Select single thread/mutil thread mode
+## Select single thread/mutli thread mode
 
 Attach one `CurlMultiRegistry` component to any persistent gameobject, by `DontDestroyOnLoad`, and select `multiThread` on or not.
 If the `CurlMultiRegistry` was not pre-created a default instance with `multiThread` on will be auto created.
