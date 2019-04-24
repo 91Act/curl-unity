@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -72,20 +73,35 @@ namespace CurlUnity
             }
         }
 
-        public long recievedDataLength
-        {
-            get
-            {
-                return responseBodyStream != null ? responseBodyStream.Length : 0;
-            }
-        }
+        public long recievedDataLength { get; private set; }
 
         private IntPtr easyPtr;
         private CurlMulti multi;
         private int retryCount;
-        private Dictionary<string, string> userHeader;
-        private Dictionary<string, string> outHeader;
-        private Dictionary<string, string> inHeader;
+
+        private class CaseInsensiveComparer : IEqualityComparer<string>
+        {
+            public bool Equals(string x, string y)
+            {
+                return x.Equals(y, StringComparison.OrdinalIgnoreCase);
+            }
+
+            public int GetHashCode(string obj)
+            {
+                return obj.GetHashCode();
+            }
+        }
+
+        private class HeaderDict : Dictionary<string, string>
+        {
+            public HeaderDict()
+                : base(new CaseInsensiveComparer())
+            { }
+        }
+
+        private HeaderDict userHeader;
+        private HeaderDict outHeader;
+        private HeaderDict inHeader;
 
         private Stream responseHeaderStream;
         private Stream responseBodyStream;
@@ -116,7 +132,7 @@ namespace CurlUnity
             Lib.curl_global_init((long)CURLGLOBAL.ALL);
         }
 
-        public CurlEasy(IntPtr ptr = default(IntPtr))
+        public CurlEasy(IntPtr ptr = default)
         {
             if (ptr != IntPtr.Zero)
             {
@@ -259,18 +275,19 @@ namespace CurlUnity
             return result;
         }
 
+        [Obsolete("")]
         public async Task<CURLE> PerformAsync()
         {
             return await Task.Run(Perform);
         }
 
-        public void MultiPerform(CurlMulti _multi)
+        public void MultiPerform(CurlMulti _multi = null)
         {
             if (!running)
             {
                 running = true;
                 retryCount = maxRetryCount;
-                multi = _multi;
+                multi = _multi ?? CurlMulti.DefaultInstance;
 
                 Prepare();
                 multi.AddEasy(this);
@@ -288,6 +305,7 @@ namespace CurlUnity
                 multi.RemoveEasy(this);
                 multi = null;
             }
+            performCallback?.Invoke(CURLE.ABORTED_BY_CALLBACK, this);
             performCallback = null;
         }
 
@@ -359,6 +377,7 @@ namespace CurlUnity
             SetOpt(CURLOPT.HEADERDATA, (IntPtr)thisHandle);
 
             // Handle response body
+            recievedDataLength = 0;
             if (string.IsNullOrEmpty(outputPath))
             {
                 responseBodyStream = new MemoryStream();
@@ -410,7 +429,7 @@ namespace CurlUnity
                     message = line.Substring(nextIndex + 1);
                 }
 
-                inHeader = new Dictionary<string, string>();
+                inHeader = new HeaderDict();
 
                 while (true)
                 {
@@ -429,7 +448,10 @@ namespace CurlUnity
                 }
 
                 var ms = responseBodyStream as MemoryStream;
-                inData = ms?.ToArray();
+                if (ms != null)
+                {
+                    inData = ms.ToArray();
+                }
 
                 if (status == 200)
                 {
@@ -530,7 +552,7 @@ namespace CurlUnity
         {
             if (userHeader == null)
             {
-                userHeader = new Dictionary<string, string>();
+                userHeader = new HeaderDict();
             }
             userHeader[key] = value;
         }
@@ -562,6 +584,8 @@ namespace CurlUnity
             Marshal.Copy(ptr, bytes, 0, size);
             thiz.responseHeaderStream.Write(bytes, 0, size);
 #endif
+            thiz.recievedDataLength += size;
+
             return size;
         }
 
@@ -613,7 +637,7 @@ namespace CurlUnity
                         var index = line.IndexOf(':');
                         if (index >= 0)
                         {
-                            if (thiz.outHeader == null) thiz.outHeader = new Dictionary<string, string>();
+                            if (thiz.outHeader == null) thiz.outHeader = new HeaderDict();
                             var key = line.Substring(0, index).Trim();
                             var value = line.Substring(index + 1).Trim();
                             thiz.outHeader[key] = value;

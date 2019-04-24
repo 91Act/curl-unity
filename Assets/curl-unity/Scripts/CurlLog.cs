@@ -27,5 +27,11 @@ namespace CurlUnity
             if (LogErrorFunction != null) LogErrorFunction(message);
             else Debug.LogError(message);
         }
+
+        public static bool Assert(bool condition, string message)
+        {
+            if (!condition) LogError(message);
+            return condition;
+        }
     }
 }

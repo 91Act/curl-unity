@@ -14,6 +14,10 @@ namespace CurlUnity
         public delegate int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, int size, IntPtr userdata);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void LockFunction(IntPtr ptr, CURLLOCKDATA data, CURLLOCKACCESS access, IntPtr userdata);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void UnlockFunction(IntPtr ptr, CURLLOCKDATA data, IntPtr userdata);
     }
 
     public static class Lib
@@ -118,6 +122,10 @@ namespace CurlUnity
         public static extern CURLSH curl_share_setopt_ptr(IntPtr sharePtr, CURLSHOPT option, IntPtr arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLSH curl_share_setopt_ptr(IntPtr sharePtr, CURLSHOPT option, byte[] arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_setopt_ptr(IntPtr sharePtr, CURLSHOPT option, Delegates.LockFunction arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLSH curl_share_setopt_ptr(IntPtr sharePtr, CURLSHOPT option, Delegates.UnlockFunction arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLSH curl_share_cleanup(IntPtr sharePtr);
         #endregion

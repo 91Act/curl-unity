@@ -1,31 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CurlUnity
 {
     public class CurlMulti : IDisposable
     {
         public delegate void MultiPerformCallback(CURLE result, CurlMulti multi);
-
+        
         private IntPtr multiPtr;
         private CurlShare share;
         private Dictionary<IntPtr, CurlEasy> workingEasies = new Dictionary<IntPtr, CurlEasy>();
 
-        private static CurlMulti defaultMulti;
+        private static CurlMulti defaultInstance;
 
-        public static CurlMulti DefaultMulti
+        public static CurlMulti DefaultInstance
         {
             get
             {
-                if (defaultMulti == null)
+                if (defaultInstance == null)
                 {
-                    defaultMulti = new CurlMulti();
+                    defaultInstance = new CurlMulti();
                 }
-                return defaultMulti;
+
+                return defaultInstance;
             }
         }
 
-        public CurlMulti(IntPtr ptr = default(IntPtr))
+        public CurlMulti(IntPtr ptr = default)
         {
             if (ptr != IntPtr.Zero)
             {
@@ -39,14 +41,16 @@ namespace CurlUnity
             Lib.curl_multi_setopt_int(multiPtr, CURLMOPT.PIPELINING, (long)CURLPIPE.MULTIPLEX);
 
             share = new CurlShare();
-
             share.SetOpt(CURLSHOPT.SHARE, (long)CURLLOCKDATA.SSL_SESSION);
+
+            CurlMultiRegistry.Instance.RegisterMulti(this);
         }
 
         public void CleanUp()
         {
             if (multiPtr != IntPtr.Zero)
             {
+                CurlMultiRegistry.Instance.UnregisterMulti(this);
                 Lib.curl_multi_cleanup(multiPtr);
                 multiPtr = IntPtr.Zero;
             }
@@ -55,7 +59,15 @@ namespace CurlUnity
         public void Dispose()
         {
             CleanUp();
+        }
 
+        public void Abort()
+        {
+            foreach (var easy in workingEasies.Values.ToList())
+            {
+                easy.Abort();
+                easy.CleanUp();
+            }
         }
 
         public void AddEasy(CurlEasy easy)
@@ -63,28 +75,22 @@ namespace CurlUnity
             workingEasies[(IntPtr)easy] = easy;
             Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
             easy.SetOpt(CURLOPT.SHARE, (IntPtr)share);
-            CurlMultiUpdater.Instance.AddMulti(this);
         }
 
         public void RemoveEasy(CurlEasy easy)
         {
             workingEasies.Remove((IntPtr)easy);
             Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
-
-            if (workingEasies.Count == 0)
-            {
-                CurlMultiUpdater.Instance.RemoveMulti(this);
-            }
         }
 
-        internal void Tick()
+        internal int Perform()
         {
             long running = 0;
             Lib.curl_multi_perform(multiPtr, ref running);
 
-            long index = 0;
             while (true)
             {
+                long index = 0;
                 var msgPtr = Lib.curl_multi_info_read(multiPtr, ref index);
                 if (msgPtr != IntPtr.Zero)
                 {
@@ -103,6 +109,13 @@ namespace CurlUnity
                     break;
                 }
             }
+
+            return (int)running;
+        }
+
+        internal void SetupLock(bool on)
+        {
+            share.SetupLock(on);
         }
 
         public static explicit operator IntPtr(CurlMulti multi)

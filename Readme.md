@@ -57,9 +57,16 @@ Besides, for a better performance you could enable `Allow unsafe code` and add `
 
 ![project settings](doc/project_settings.png)
 
+> This is optional
+
 # Usage
 
-## Non-blocking multi perform (single thread, recommended)
+## Select single thread/mutil thread mode
+
+Attach one `CurlMultiRegistry` component to any persistent gameobject, by `DontDestroyOnLoad`, and select `multiThread` on or not.
+If the `CurlMultiRegistry` was not pre-created a default instance with `multiThread` on will be auto created.
+
+## Non-blocking multi perform
 
 > Only by using this multi perform that could take the advantage of HTTP/2 multiplexing feature.
 
@@ -72,6 +79,7 @@ void Start()
         easy.url = "https://nghttp2.org";
         easy.useHttp2 = true;
         easy.timeout = 5000;
+        // NOTICE: This callback may be invoked on other thread
         easy.performCallback = OnPerformCallback;
 
         // You could also create your own CurlMulti instance
@@ -88,7 +96,7 @@ void OnPerformCallback(CURLE result, CurlEasy easy)
 }
 ```
 
-## Non-blocking easy perform (multi thread, experimental, lock is not implemented yet)
+## Non-blocking easy perform (Deprecated)
 ```csharp
 async void Start()
 {
