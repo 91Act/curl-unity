@@ -584,7 +584,6 @@ namespace CurlUnity
             Marshal.Copy(ptr, bytes, 0, size);
             thiz.responseHeaderStream.Write(bytes, 0, size);
 #endif
-            thiz.recievedDataLength += size;
 
             return size;
         }
@@ -605,6 +604,8 @@ namespace CurlUnity
             Marshal.Copy(ptr, bytes, 0, size);
             thiz.responseBodyStream.Write(bytes, 0, size);
 #endif
+            thiz.recievedDataLength += size;
+
             return size;
         }
 

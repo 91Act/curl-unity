@@ -1,7 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEditor;
+#if UNITY_EDITOR
 using UnityEngine;
+#endif
 
 namespace CurlUnity
 {
@@ -15,6 +18,8 @@ namespace CurlUnity
         private List<CurlMulti> penddingRemove = new List<CurlMulti>();
         private Task multiThreadTask;
         private CancellationTokenSource taskCancelSource;
+        private EventWaitHandle pauseHandle;
+
         private bool started = false;
         private int lastRunning = 0;
 
@@ -26,8 +31,10 @@ namespace CurlUnity
             {
                 if (instance == null)
                 {
-                    var go = new GameObject("CurlMultiRegistry");
-                    go.hideFlags = HideFlags.DontSave;
+                    var go = new GameObject("CurlMultiRegistry")
+                    {
+                        hideFlags = HideFlags.DontSave
+                    };
                     DontDestroyOnLoad(go);
                     go.AddComponent<CurlMultiRegistry>();
                 }
@@ -40,6 +47,9 @@ namespace CurlUnity
             if (CurlLog.Assert(instance == null, "Only one CurlMultiRegistry instance is allowed"))
             {
                 instance = this;
+#if UNITY_EDITOR
+                EditorApplication.pauseStateChanged += EditorPaueStateChanged;
+#endif
             }
         }
 
@@ -70,6 +80,8 @@ namespace CurlUnity
         {
             if (multiThread)
             {
+                pauseHandle = new EventWaitHandle(true, EventResetMode.ManualReset);
+
                 taskCancelSource = new CancellationTokenSource();
                 var cancelToken = taskCancelSource.Token;
 
@@ -77,6 +89,7 @@ namespace CurlUnity
                 {
                     while (!cancelToken.IsCancellationRequested)
                     {
+                        pauseHandle.WaitOne();
                         Perform();
                         Thread.Sleep(lastRunning > 0 ? 1 : 50);
                     }
@@ -87,15 +100,24 @@ namespace CurlUnity
 
         public async Task Shutdown()
         {
-            taskCancelSource.Cancel();
-            await multiThreadTask;
-        }
-
-        public void Reset()
-        {
             foreach (var multi in multiList)
             {
                 multi.Abort();
+            }
+
+            if (multiThreadTask != null)
+            {
+                taskCancelSource.Cancel();
+                await multiThreadTask;
+            }
+        }
+
+        public void Pause(bool pause)
+        {
+            if (started && multiThread)
+            {
+                if (pause) pauseHandle.Reset();
+                else pauseHandle.Set();
             }
         }
 
@@ -138,5 +160,17 @@ namespace CurlUnity
                 lastRunning += multi.Perform();
             }
         }
+
+        void OnApplicationPause(bool pause)
+        {
+            Pause(pause);
+        }
+
+#if UNITY_EDITOR
+        private void EditorPaueStateChanged(PauseState state)
+        {
+            OnApplicationPause(state == PauseState.Paused);
+        }
+#endif
     }
 }

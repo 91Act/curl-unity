@@ -42,8 +42,6 @@ namespace CurlUnity
 
             share = new CurlShare();
             share.SetOpt(CURLSHOPT.SHARE, (long)CURLLOCKDATA.SSL_SESSION);
-
-            CurlMultiRegistry.Instance.RegisterMulti(this);
         }
 
         public void CleanUp()
@@ -75,12 +73,22 @@ namespace CurlUnity
             workingEasies[(IntPtr)easy] = easy;
             Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
             easy.SetOpt(CURLOPT.SHARE, (IntPtr)share);
+
+            if (workingEasies.Count == 1)
+            {
+                CurlMultiRegistry.Instance.RegisterMulti(this);
+            }
         }
 
         public void RemoveEasy(CurlEasy easy)
         {
             workingEasies.Remove((IntPtr)easy);
             Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
+
+            if (workingEasies.Count == 0)
+            {
+                CurlMultiRegistry.Instance.UnregisterMulti(this);
+            }
         }
 
         internal int Perform()
