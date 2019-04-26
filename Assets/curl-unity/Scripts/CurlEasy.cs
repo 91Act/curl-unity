@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -20,6 +21,7 @@ namespace CurlUnity
         public int timeout { get; set; } = 0;
         public int connectionTimeout { get; set; } = 5000;
         public int maxRetryCount { get; set; } = 5;
+        public int retryInterval { get; set; } = 1000;
         public bool forceHttp2 { get; set; }
         public bool insecure { get; set; }
         public byte[] outData { get; set; }
@@ -263,6 +265,10 @@ namespace CurlUnity
                         if (debug) Dump();
                         break;
                     }
+                    else
+                    {
+                        Thread.Sleep(retryInterval);
+                    }
                 }
 
                 running = false;
@@ -309,7 +315,7 @@ namespace CurlUnity
             performCallback = null;
         }
 
-        public void OnMultiPerform(CURLE result, CurlMulti multi)
+        internal void OnMultiPerform(CURLE result, CurlMulti multi)
         {
             var done = ProcessResponse(result);
 
@@ -322,6 +328,7 @@ namespace CurlUnity
             }
             else
             {
+                Thread.Sleep(retryInterval);
                 Prepare();
                 multi.AddEasy(this);
             }
