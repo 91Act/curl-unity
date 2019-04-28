@@ -48,7 +48,7 @@ namespace CurlUnity
         {
             if (multiPtr != IntPtr.Zero)
             {
-                CurlMultiRegistry.Instance.UnregisterMulti(this);
+                CurlMultiUpdater.Instance.RemoveMulti(this);
                 Lib.curl_multi_cleanup(multiPtr);
                 multiPtr = IntPtr.Zero;
             }
@@ -76,7 +76,7 @@ namespace CurlUnity
 
             if (workingEasies.Count == 1)
             {
-                CurlMultiRegistry.Instance.RegisterMulti(this);
+                CurlMultiUpdater.Instance.AddMulti(this);
             }
         }
 
@@ -87,34 +87,38 @@ namespace CurlUnity
 
             if (workingEasies.Count == 0)
             {
-                CurlMultiRegistry.Instance.UnregisterMulti(this);
+                CurlMultiUpdater.Instance.RemoveMulti(this);
             }
         }
 
         internal int Perform()
         {
             long running = 0;
-            Lib.curl_multi_perform(multiPtr, ref running);
 
-            while (true)
+            if (multiPtr != IntPtr.Zero)
             {
-                long index = 0;
-                var msgPtr = Lib.curl_multi_info_read(multiPtr, ref index);
-                if (msgPtr != IntPtr.Zero)
+                Lib.curl_multi_perform(multiPtr, ref running);
+
+                while (true)
                 {
-                    var msg = (CurlMsg)msgPtr;
-                    if (msg.message == CURLMSG.DONE)
+                    long index = 0;
+                    var msgPtr = Lib.curl_multi_info_read(multiPtr, ref index);
+                    if (msgPtr != IntPtr.Zero)
                     {
-                        if (workingEasies.TryGetValue(msg.easyPtr, out var easy))
+                        var msg = (CurlMsg)msgPtr;
+                        if (msg.message == CURLMSG.DONE)
                         {
-                            RemoveEasy(easy);
-                            easy.OnMultiPerform(msg.result, this);
+                            if (workingEasies.TryGetValue(msg.easyPtr, out var easy))
+                            {
+                                RemoveEasy(easy);
+                                easy.OnMultiPerform(msg.result, this);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    break;
+                    else
+                    {
+                        break;
+                    }
                 }
             }
 
