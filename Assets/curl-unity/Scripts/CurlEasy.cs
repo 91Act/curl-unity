@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -121,6 +120,7 @@ namespace CurlUnity
             return buffer;
         }
 #endif
+        private TaskScheduler taskScheduler;
 
         private static string s_capath;
 
@@ -136,6 +136,8 @@ namespace CurlUnity
 
         public CurlEasy(IntPtr ptr = default)
         {
+            taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+
             if (ptr != IntPtr.Zero)
             {
                 easyPtr = ptr;
@@ -311,8 +313,6 @@ namespace CurlUnity
                 multi.RemoveEasy(this);
                 multi = null;
             }
-            performCallback?.Invoke(CURLE.ABORTED_BY_CALLBACK, this);
-            performCallback = null;
             CloseStreams();
         }
 
@@ -323,9 +323,20 @@ namespace CurlUnity
             if (done || --retryCount < 0)
             {
                 if (debug) Dump();
-                performCallback?.Invoke(result, this);
-                performCallback = null;
-                running = false;
+
+                if (performCallback != null)
+                {
+                    new Task(() =>
+                    {
+                        performCallback(result, this);
+                        performCallback = null;
+                        running = false;
+                    }).Start(taskScheduler);
+                }
+                else
+                {
+                    running = false;
+                }
             }
             else
             {
