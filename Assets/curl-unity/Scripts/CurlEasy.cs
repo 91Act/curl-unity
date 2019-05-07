@@ -313,6 +313,7 @@ namespace CurlUnity
             }
             performCallback?.Invoke(CURLE.ABORTED_BY_CALLBACK, this);
             performCallback = null;
+            CloseStreams();
         }
 
         internal void OnMultiPerform(CURLE result, CurlMulti multi)
@@ -412,6 +413,20 @@ namespace CurlUnity
             SetOpt(CURLOPT.TIMEOUT_MS, timeout);
         }
 
+        private void CloseStreams()
+        {
+            if (responseHeaderStream != null)
+            {
+                responseHeaderStream.Close();
+                responseHeaderStream = null;
+            }
+            if (responseBodyStream != null)
+            {
+                responseBodyStream.Close();
+                responseBodyStream = null;
+            }
+        }
+
         private bool ProcessResponse(CURLE result)
         {
             var done = false;
@@ -477,10 +492,8 @@ namespace CurlUnity
                 CurlLog.LogWarning($"Failed to request: {uri}, reason: {result}");
             }
 
-            responseHeaderStream.Close();
-            responseHeaderStream = null;
-            responseBodyStream.Close();
-            responseBodyStream = null;
+            CloseStreams();
+
 
             return done;
         }
