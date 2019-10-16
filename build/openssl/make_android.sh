@@ -39,7 +39,7 @@ do_make()
 
         PATH=$ANDROID_NDK_HOME/toolchains/$TOOLCHAIN/prebuilt/darwin-x86_64/bin:$PATH
 
-        ./Configure $CONF_ARCH --prefix=$PREBUILT_DIR -D__ANDROID_API__=27 no-asm no-shared no-unit-test
+        ./Configure $CONF_ARCH --prefix=$PREBUILT_DIR -D__ANDROID_API__=21 no-asm no-shared no-unit-test
 
         make clean
         make install_dev -j8

@@ -12,6 +12,7 @@ namespace CurlUnity
     public class CurlEasy : IDisposable
     {
         public delegate void PerformCallback(CURLE result, CurlEasy easy);
+        private static List<int> validResponseCode = new List<int> { 507, 509, 510, 400, 403, 404, 200 };
 
         public Uri uri { get; set; }
         public string method { get; set; } = "GET";
@@ -21,7 +22,10 @@ namespace CurlUnity
         public int connectionTimeout { get; set; } = 5000;
         public int maxRetryCount { get; set; } = 5;
         public int retryInterval { get; set; } = 1000;
-        public bool forceHttp2 { get; set; }
+        public int lowSpeedLimit { get; set; } = 100;
+        public int lowSpeedTimeout { get; set; } = 30;
+        public int outSpeedLimit { get; set; } = 0;
+        public int inSpeedLimit { get; set; } = 0;
         public bool insecure { get; set; }
         public byte[] outData { get; set; }
         public byte[] inData { get; private set; }
@@ -31,6 +35,7 @@ namespace CurlUnity
         public bool running { get; private set; }
         public PerformCallback performCallback { get; set; }
         public bool debug { get; set; }
+        public CurlDecoder decoder { get; set; }
 
         public string outText
         {
@@ -80,7 +85,7 @@ namespace CurlUnity
         private CurlMulti multi;
         private int retryCount;
 
-        private class CaseInsensiveComparer : IEqualityComparer<string>
+        public class CaseInsensiveComparer : IEqualityComparer<string>
         {
             public bool Equals(string x, string y)
             {
@@ -89,20 +94,20 @@ namespace CurlUnity
 
             public int GetHashCode(string obj)
             {
-                return obj.GetHashCode();
+                return obj.ToLower().GetHashCode();
             }
         }
 
-        private class HeaderDict : Dictionary<string, string>
+        public class HeaderDict : Dictionary<string, string>
         {
             public HeaderDict()
                 : base(new CaseInsensiveComparer())
             { }
         }
 
-        private HeaderDict userHeader;
-        private HeaderDict outHeader;
-        private HeaderDict inHeader;
+        public HeaderDict userHeader { get; private set; }
+        public HeaderDict outHeader { get; set; }
+        public HeaderDict inHeader { get; private set; }
 
         private Stream responseHeaderStream;
         private Stream responseBodyStream;
@@ -148,7 +153,7 @@ namespace CurlUnity
             }
         }
 
-        public void CleanUp()
+        internal void CleanUp()
         {
             if (easyPtr != IntPtr.Zero)
             {
@@ -159,7 +164,7 @@ namespace CurlUnity
 
         public void Dispose()
         {
-            CleanUp();
+            Abort();
         }
 
         public void Reset()
@@ -264,7 +269,7 @@ namespace CurlUnity
                     var done = ProcessResponse(result);
                     if (done || --retryCount < 0)
                     {
-                        if (debug) Dump();
+                        Dump();
                         break;
                     }
                     else
@@ -313,7 +318,30 @@ namespace CurlUnity
                 multi.RemoveEasy(this);
                 multi = null;
             }
-            CloseStreams();
+
+            if (easyPtr != IntPtr.Zero)
+            {
+                OnComplete(CURLE.ABORTED_BY_CALLBACK);
+                CloseStreams();
+                CleanUp();
+            }
+        }
+
+        private void OnComplete(CURLE result)
+        {
+            if (performCallback != null)
+            {
+                new Task(() =>
+                {
+                    performCallback(result, this);
+                    performCallback = null;
+                    running = false;
+                }).Start(taskScheduler);
+            }
+            else
+            {
+                running = false;
+            }
         }
 
         internal void OnMultiPerform(CURLE result, CurlMulti multi)
@@ -322,21 +350,10 @@ namespace CurlUnity
 
             if (done || --retryCount < 0)
             {
-                if (debug) Dump();
+                Dump();
 
-                if (performCallback != null)
-                {
-                    new Task(() =>
-                    {
-                        performCallback(result, this);
-                        performCallback = null;
-                        running = false;
-                    }).Start(taskScheduler);
-                }
-                else
-                {
-                    running = false;
-                }
+                OnComplete(result);
+
             }
             else
             {
@@ -348,80 +365,91 @@ namespace CurlUnity
 
         private void Prepare()
         {
-            status = 0;
-            message = null;
-
-            thisHandle = GCHandle.Alloc(this);
-
-            SetOpt(CURLOPT.URL, uri.AbsoluteUri);
-            SetOpt(CURLOPT.CUSTOMREQUEST, method);
-
-            if (forceHttp2 || uri.Scheme == "https")
+            try
             {
-                SetOpt(CURLOPT.HTTP_VERSION, (long)HTTPVersion.VERSION_2_0);
+                status = 0;
+                message = null;
+
+                thisHandle = GCHandle.Alloc(this);
+
+                SetOpt(CURLOPT.URL, uri.AbsoluteUri);
+                SetOpt(CURLOPT.CUSTOMREQUEST, method);
+
+                SetOpt(CURLOPT.HTTP_VERSION, (long)HTTPVersion.VERSION_2TLS);
                 SetOpt(CURLOPT.PIPEWAIT, true);
-            }
 
-            if (insecure)
-            {
-                SetOpt(CURLOPT.SSL_VERIFYHOST, false);
-                SetOpt(CURLOPT.SSL_VERIFYPEER, false);
-            }
 
-            // Ca cert path
-            SetOpt(CURLOPT.CAINFO, s_capath);
-
-            // Fill request header
-            var requestHeader = new CurlSlist(IntPtr.Zero);
-            requestHeader.Append($"Content-Type:{contentType}");
-            if (userHeader != null)
-            {
-                foreach (var entry in userHeader)
+                if (insecure)
                 {
-                    requestHeader.Append(entry.Key + ":" + entry.Value);
+                    SetOpt(CURLOPT.SSL_VERIFYHOST, false);
+                    SetOpt(CURLOPT.SSL_VERIFYPEER, false);
                 }
-            }
 
-            SetOpt(CURLOPT.HTTPHEADER, (IntPtr)requestHeader);
-            // Fill request body
-            if (outData != null && outData.Length > 0)
+                // Ca cert path
+                SetOpt(CURLOPT.CAINFO, s_capath);
+
+                // Fill request header
+                var requestHeader = new CurlSlist(IntPtr.Zero);
+                requestHeader.Append($"Content-Type:{contentType}");
+                if (userHeader != null)
+                {
+                    foreach (var entry in userHeader)
+                    {
+                        requestHeader.Append(entry.Key + ":" + entry.Value);
+                    }
+                }
+
+                SetOpt(CURLOPT.HTTPHEADER, (IntPtr)requestHeader);
+                // Fill request body
+                if (outData != null && outData.Length > 0)
+                {
+                    SetOpt(CURLOPT.POSTFIELDS, outData);
+                    SetOpt(CURLOPT.POSTFIELDSIZE, outData.Length);
+                }
+
+                // Handle response header
+                responseHeaderStream = new MemoryStream();
+                SetOpt(CURLOPT.HEADERFUNCTION, (Delegates.HeaderFunction)HeaderFunction);
+                SetOpt(CURLOPT.HEADERDATA, (IntPtr)thisHandle);
+
+                // Handle response body
+                recievedDataLength = 0;
+                if (string.IsNullOrEmpty(outputPath))
+                {
+                    responseBodyStream = new MemoryStream();
+                }
+                else
+                {
+                    var dir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
+                    responseBodyStream = new FileStream(outputPath, FileMode.OpenOrCreate);
+                }
+                SetOpt(CURLOPT.WRITEFUNCTION, (Delegates.WriteFunction)WriteFunction);
+                SetOpt(CURLOPT.WRITEDATA, (IntPtr)thisHandle);
+
+                // Debug
+                if (debug)
+                {
+                    outHeader = null;
+                    SetOpt(CURLOPT.VERBOSE, true);
+                    SetOpt(CURLOPT.DEBUGFUNCTION, DebugFunction);
+                    SetOpt(CURLOPT.DEBUGDATA, (IntPtr)thisHandle);
+                }
+
+                // Timeout
+                SetOpt(CURLOPT.CONNECTTIMEOUT_MS, connectionTimeout);
+                SetOpt(CURLOPT.TIMEOUT_MS, timeout);
+                SetOpt(CURLOPT.LOW_SPEED_LIMIT, lowSpeedLimit);
+                SetOpt(CURLOPT.LOW_SPEED_TIME, lowSpeedTimeout);
+
+                // Speed limitation
+                SetOpt(CURLOPT.MAX_SEND_SPEED_LARGE, outSpeedLimit);
+                SetOpt(CURLOPT.MAX_RECV_SPEED_LARGE, inSpeedLimit);
+            }
+            catch (Exception e)
             {
-                SetOpt(CURLOPT.POSTFIELDS, outData);
-                SetOpt(CURLOPT.POSTFIELDSIZE, outData.Length);
+                CurlLog.LogError("Unexpected exception: " + e);
             }
-
-            // Handle response header
-            responseHeaderStream = new MemoryStream();
-            SetOpt(CURLOPT.HEADERFUNCTION, (Delegates.HeaderFunction)HeaderFunction);
-            SetOpt(CURLOPT.HEADERDATA, (IntPtr)thisHandle);
-
-            // Handle response body
-            recievedDataLength = 0;
-            if (string.IsNullOrEmpty(outputPath))
-            {
-                responseBodyStream = new MemoryStream();
-            }
-            else
-            {
-                var dir = Path.GetDirectoryName(outputPath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                responseBodyStream = new FileStream(outputPath, FileMode.OpenOrCreate);
-            }
-            SetOpt(CURLOPT.WRITEFUNCTION, (Delegates.WriteFunction)WriteFunction);
-            SetOpt(CURLOPT.WRITEDATA, (IntPtr)thisHandle);
-
-            // Debug
-            if (debug)
-            {
-                outHeader = null;
-                SetOpt(CURLOPT.VERBOSE, true);
-                SetOpt(CURLOPT.DEBUGFUNCTION, DebugFunction);
-                SetOpt(CURLOPT.DEBUGDATA, (IntPtr)thisHandle);
-            }
-
-            // Timeout
-            SetOpt(CURLOPT.CONNECTTIMEOUT_MS, connectionTimeout);
-            SetOpt(CURLOPT.TIMEOUT_MS, timeout);
         }
 
         private void CloseStreams()
@@ -442,68 +470,79 @@ namespace CurlUnity
         {
             var done = false;
 
-            thisHandle.Free();
-
-            if (result == CURLE.OK)
+            try
             {
-                responseHeaderStream.Position = 0;
-                var sr = new StreamReader(responseHeaderStream);
+                thisHandle.Free();
 
-                // Handle first line
+                if (result == CURLE.OK)
                 {
-                    var line = sr.ReadLine();
-                    var index = line.IndexOf(' ');
-                    httpVersion = line.Substring(0, index);
-                    var nextIndex = line.IndexOf(' ', index + 1);
-                    if (int.TryParse(line.Substring(index + 1, nextIndex - index), out var _status))
+                    responseHeaderStream.Position = 0;
+                    var sr = new StreamReader(responseHeaderStream);
+
+                    // Handle first line
                     {
-                        status = _status;
+                        var line = sr.ReadLine();
+                        var index = line.IndexOf(' ');
+                        httpVersion = line.Substring(0, index);
+                        var nextIndex = line.IndexOf(' ', index + 1);
+                        if (int.TryParse(line.Substring(index + 1, nextIndex - index), out var _status))
+                        {
+                            status = _status;
+                        }
+                        message = line.Substring(nextIndex + 1);
                     }
-                    message = line.Substring(nextIndex + 1);
-                }
 
-                inHeader = new HeaderDict();
+                    inHeader = new HeaderDict();
 
-                while (true)
-                {
-                    var line = sr.ReadLine();
-                    if (!string.IsNullOrEmpty(line))
+                    while (true)
                     {
-                        var index = line.IndexOf(':');
-                        var key = line.Substring(0, index).Trim();
-                        var value = line.Substring(index + 1).Trim();
-                        inHeader[key] = value;
+                        var line = sr.ReadLine();
+                        if (!string.IsNullOrEmpty(line))
+                        {
+                            var index = line.IndexOf(':');
+                            var key = line.Substring(0, index).Trim();
+                            var value = line.Substring(index + 1).Trim();
+                            inHeader[key] = value;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     }
-                    else
+
+                    var ms = responseBodyStream as MemoryStream;
+                    if (ms != null)
                     {
-                        break;
+                        inData = ms.ToArray();
                     }
+
+                    if (status == 200)
+                    {
+                        done = true;
+                    }
+                    else if(validResponseCode.Contains(status))
+                    {
+                        done = true;
+                    }
+                    else if (status / 100 == 3)
+                    {
+                        if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
+                        {
+                            uri = new Uri(location);
+                        }
+                    }
+                }
+                else
+                {
+                    CurlLog.LogWarning($"Failed to request: {uri}, reason: {result}");
                 }
 
-                var ms = responseBodyStream as MemoryStream;
-                if (ms != null)
-                {
-                    inData = ms.ToArray();
-                }
-
-                if (status == 200)
-                {
-                    done = true;
-                }
-                else if (status / 100 == 3)
-                {
-                    if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
-                    {
-                        uri = new Uri(location);
-                    }
-                }
+                CloseStreams();
             }
-            else
+            catch (Exception e)
             {
-                CurlLog.LogWarning($"Failed to request: {uri}, reason: {result}");
+                CurlLog.LogError("Unexpected exception: " + e);
             }
-
-            CloseStreams();
 
 
             return done;
@@ -511,57 +550,77 @@ namespace CurlUnity
 
         private void Dump()
         {
-            var sb = new StringBuilder();
+            try
+            {
+                var sb = new StringBuilder();
 
-            GetInfo(CURLINFO.EFFECTIVE_URL, out string effectiveUrl);
-            GetInfo(CURLINFO.TOTAL_TIME, out double time);
+                GetInfo(CURLINFO.EFFECTIVE_URL, out string effectiveUrl);
+                GetInfo(CURLINFO.TOTAL_TIME, out double time);
+                GetInfo(CURLINFO.PRIMARY_IP, out string ip);
 
 #if UNITY_EDITOR
-            var colorize = true;
+                var colorize = true;
 #else
             var colorize = false;
 #endif
 
-            sb.AppendLine($"{effectiveUrl} [ {method.ToUpper()} ] [ {httpVersion} {status} {message} ] [ {outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) ] [ {time * 1000} ms ]");
-
-            if (outHeader != null)
-            {
-                if (colorize) sb.AppendLine("<b><color=lightblue>Request Headers</color></b>");
-                else sb.AppendLine("-- Request Headers --");
-
-                foreach (var entry in outHeader)
+                if (colorize)
                 {
-                    if (colorize) sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
-                    else sb.AppendLine($"[{entry.Key}] {entry.Value}");
+                    sb.AppendLine($"<color={(status == 200 ? "green" : "red")}><b>[{method.ToUpper()}]</b></color> {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
                 }
-            }
+                else sb.AppendLine($"[{method.ToUpper()}] {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
 
-            if (outData != null && outData.Length > 0)
-            {
-                if (colorize) sb.AppendLine($"<b><color=lightblue>Request Body</color></b> [ {outData.Length} ]");
-                else sb.AppendLine($"-- Request Body -- [ {outData.Length} ]");
-                sb.AppendLine(Encoding.UTF8.GetString(outData, 0, Math.Min(outData.Length, 0x400)));
-            }
-
-            if (inHeader != null)
-            {
-                if (colorize) sb.AppendLine("<b><color=lightblue>Response Headers</color></b>");
-                else sb.AppendLine("-- Response Headers --");
-                foreach (var entry in inHeader)
+                if (debug)
                 {
-                    if (colorize) sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
-                    else sb.AppendLine($"[{entry.Key}] {entry.Value}");
+                    if (outHeader != null)
+                    {
+                        if (colorize) sb.AppendLine("<b><color=lightblue>Request Headers</color></b>");
+                        else sb.AppendLine("-- Request Headers --");
+
+                        foreach (var entry in outHeader)
+                        {
+                            if (colorize) sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                            else sb.AppendLine($"[{entry.Key}] {entry.Value}");
+                        }
+                    }
+
+                    if (outData != null && outData.Length > 0)
+                    {
+                        if (colorize) sb.AppendLine($"<b><color=lightblue>Request Body</color></b> [ {outData.Length} ]");
+                        else sb.AppendLine($"-- Request Body -- [ {outData.Length} ]");
+
+                        string outDataString = decoder?.DecodeOutData(this) ?? Encoding.UTF8.GetString(outData, 0, Math.Min(outData.Length, 0x400));
+
+                        sb.AppendLine(outDataString);
+                    }
+
+                    if (inHeader != null)
+                    {
+                        if (colorize) sb.AppendLine("<b><color=lightblue>Response Headers</color></b>");
+                        else sb.AppendLine("-- Response Headers --");
+                        foreach (var entry in inHeader)
+                        {
+                            if (colorize) sb.AppendLine($"<b><color=silver>[{entry.Key}]</color></b> {entry.Value}");
+                            else sb.AppendLine($"[{entry.Key}] {entry.Value}");
+                        }
+                    }
+
+                    if (inData != null && inData.Length > 0)
+                    {
+                        if (colorize) sb.AppendLine($"<b><color=lightblue>Response Body</color></b> [ {inData.Length} ]");
+                        else sb.AppendLine($"-- Response Body -- [ {inData.Length} ]");
+
+                        string inDataString = decoder?.DecodeInData(this) ?? Encoding.UTF8.GetString(inData, 0, Math.Min(inData.Length, 0x400));
+
+                        sb.AppendLine(inDataString);
+                    }
                 }
+                CurlLog.Log(sb.ToString());
             }
-
-            if (inData != null && inData.Length > 0)
+            catch (Exception e)
             {
-                if (colorize) sb.AppendLine($"<b><color=lightblue>Response Body</color></b> [ {inData.Length} ]");
-                else sb.AppendLine($"-- Response Body -- [ {inData.Length} ]");
-                sb.AppendLine(Encoding.UTF8.GetString(inData, 0, Math.Min(inData.Length, 0x400)));
+                CurlLog.LogError("Unexpected exception: " + e);
             }
-
-            CurlLog.Log(sb.ToString());
         }
 
         public Dictionary<string, string> GetAllRequestHeaders()

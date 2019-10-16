@@ -21,7 +21,7 @@ function do_make()
             -DCMAKE_INSTALL_PREFIX=$PREBUILT_DIR \
             -DANDROID_ABI=$ARCH \
             -DANDROID_TOOLCHAIN_NAME=$TOOLCHAIN \
-            -DANDROID_NATIVE_API_LEVEL=android-27 \
+            -DANDROID_NATIVE_API_LEVEL=android-21 \
             -DENABLE_LIB_ONLY=ON \
             -DENABLE_STATIC_LIB=ON \
             -DENABLE_SHARED_LIB=OFF

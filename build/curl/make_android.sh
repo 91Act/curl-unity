@@ -35,7 +35,7 @@ do_make()
     STANDALONE_TOOLCHAIN=$BUILD_DIR_ROOT/toolchains/$TOOLCHAIN
 
     if [ ! -d $STANDALONE_TOOLCHAIN ]; then
-        python $ANDROID_NDK_HOME/build/tools/make_standalone_toolchain.py --arch $1 --api 27 --install-dir=$STANDALONE_TOOLCHAIN
+        python $ANDROID_NDK_HOME/build/tools/make_standalone_toolchain.py --arch $1 --api 21 --install-dir=$STANDALONE_TOOLCHAIN
     fi
 
     PREBUILT_DIR=$PREBUILT_DIR_ROOT/$ABI
@@ -46,7 +46,7 @@ do_make()
         cd $CURL_VERSION
 
         PATH=$STANDALONE_TOOLCHAIN/bin:$PATH
-        export CFLAGS="-fPIE"
+        export CFLAGS="-fPIE -D__ANDROID_API__=21"
         export LDFLAGS="-pie"
 
         ./configure \

@@ -124,41 +124,50 @@ namespace CurlUnity
 
         public void AddMulti(CurlMulti multi)
         {
-            penddingAdd.Add(multi);
-            penddingRemove.Remove(multi);
+            lock(this)
+            {
+                penddingAdd.Add(multi);
+                penddingRemove.Remove(multi);
 
-            if (multiThread) multi.SetupLock(true);
+            	if (multiThread) multi.SetupLock(true);
+            }
         }
 
         public void RemoveMulti(CurlMulti multi)
         {
-            penddingRemove.Add(multi);
-            penddingAdd.Remove(multi);
+            lock (this)
+            {
+                penddingRemove.Add(multi);
+                penddingAdd.Remove(multi);
 
-            if (multiThread) multi.SetupLock(false);
+            	if (multiThread) multi.SetupLock(false);
+            }
         }
 
         private void Perform()
         {
-            if (penddingAdd.Count > 0)
+            lock (this)
             {
-                multiList.AddRange(penddingAdd);
-                penddingAdd.Clear();
-            }
-
-            if (penddingRemove.Count > 0)
-            {
-                foreach (var multi in penddingRemove)
+                if (penddingAdd.Count > 0)
                 {
-                    multiList.Remove(multi);
+                    multiList.AddRange(penddingAdd);
+                    penddingAdd.Clear();
                 }
-                penddingRemove.Clear();
-            }
 
-            lastRunning = 0;
-            foreach (var multi in multiList)
-            {
-                lastRunning += multi.Perform();
+                if (penddingRemove.Count > 0)
+                {
+                    foreach (var multi in penddingRemove)
+                    {
+                        multiList.Remove(multi);
+                    }
+                    penddingRemove.Clear();
+                }
+
+                lastRunning = 0;
+                foreach (var multi in multiList)
+                {
+                    lastRunning += multi.Perform();
+                }
             }
         }
     }

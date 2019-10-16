@@ -44,7 +44,7 @@ namespace CurlUnity
             share.SetOpt(CURLSHOPT.SHARE, (long)CURLLOCKDATA.SSL_SESSION);
         }
 
-        public void CleanUp()
+        internal void CleanUp()
         {
             if (multiPtr != IntPtr.Zero)
             {
@@ -56,36 +56,60 @@ namespace CurlUnity
 
         public void Dispose()
         {
-            CleanUp();
+            Abort();
         }
 
         public void Abort()
         {
-            foreach (var easy in workingEasies.Values.ToList())
+            if (multiPtr != IntPtr.Zero)
             {
-                easy.Abort();
-                easy.CleanUp();
+                CurlEasy[] easies = null;
+
+                lock (this)
+                {
+                    easies = workingEasies.Values.ToArray();
+                }
+
+                foreach (var easy in easies)
+                {
+                    easy.Abort();
+                }
+
+                CleanUp();
             }
         }
 
-        public void AddEasy(CurlEasy easy)
+        internal void AddEasy(CurlEasy easy)
         {
-            workingEasies[(IntPtr)easy] = easy;
             Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
             easy.SetOpt(CURLOPT.SHARE, (IntPtr)share);
 
-            if (workingEasies.Count == 1)
+            int workingCount = 0;
+
+            lock (this)
+            {
+                workingEasies[(IntPtr)easy] = easy;
+                workingCount = workingEasies.Count;
+            }
+            if (workingCount == 1)
             {
                 CurlMultiUpdater.Instance.AddMulti(this);
             }
         }
 
-        public void RemoveEasy(CurlEasy easy)
+        internal void RemoveEasy(CurlEasy easy)
         {
-            workingEasies.Remove((IntPtr)easy);
             Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
 
-            if (workingEasies.Count == 0)
+            int workingCount = 0;
+
+            lock (this)
+            {
+                workingEasies.Remove((IntPtr)easy);
+                workingCount = workingEasies.Count;
+            }
+
+            if (workingCount == 0)
             {
                 CurlMultiUpdater.Instance.RemoveMulti(this);
             }
@@ -108,7 +132,14 @@ namespace CurlUnity
                         var msg = (CurlMsg)msgPtr;
                         if (msg.message == CURLMSG.DONE)
                         {
-                            if (workingEasies.TryGetValue(msg.easyPtr, out var easy))
+                            CurlEasy easy = null;
+
+                            lock (this)
+                            {
+                                workingEasies.TryGetValue(msg.easyPtr, out easy);
+                            }
+
+                            if (easy != null)
                             {
                                 RemoveEasy(easy);
                                 easy.OnMultiPerform(msg.result, this);

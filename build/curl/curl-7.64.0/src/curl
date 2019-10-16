@@ -187,14 +187,14 @@ func_exec_program ()
 
 
   if test -f "$progdir/$program"; then
-    # Add our own library path to DYLD_LIBRARY_PATH
-    DYLD_LIBRARY_PATH="/Users/jayyang/curl-unity/build/curl/curl-7.64.0/lib/.libs:$DYLD_LIBRARY_PATH"
+    # Add our own library path to LD_LIBRARY_PATH
+    LD_LIBRARY_PATH="/Users/91act/curl-unity/build/curl/curl-7.64.0/lib/.libs:$LD_LIBRARY_PATH"
 
-    # Some systems cannot cope with colon-terminated DYLD_LIBRARY_PATH
+    # Some systems cannot cope with colon-terminated LD_LIBRARY_PATH
     # The second colon is a workaround for a bug in BeOS R4 sed
-    DYLD_LIBRARY_PATH=`$ECHO "$DYLD_LIBRARY_PATH" | /usr/bin/sed 's/::*$//'`
+    LD_LIBRARY_PATH=`$ECHO "$LD_LIBRARY_PATH" | /usr/bin/sed 's/::*$//'`
 
-    export DYLD_LIBRARY_PATH
+    export LD_LIBRARY_PATH
 
     if test "$libtool_execute_magic" != "%%%MAGIC variable%%%"; then
       # Run the actual program with our arguments.

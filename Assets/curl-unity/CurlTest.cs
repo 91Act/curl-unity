@@ -17,7 +17,6 @@ public class CurlTest : MonoBehaviour
         {
             var easy = new CurlEasy();
             easy.uri = new Uri(line);
-            easy.useHttp2 = true;
             easy.debug = true;
             easy.performCallback = OnPerformCallback;
             easy.MultiPerform(multi);

@@ -13,4 +13,4 @@ cmake %NGHTTP2_ROOT% ^
 
 popd
 
-cmake --build %BUILD_DIR% --config Debug --target install
+cmake --build %BUILD_DIR% --config Release --target install

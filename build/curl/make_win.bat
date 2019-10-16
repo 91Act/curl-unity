@@ -12,11 +12,11 @@ nmake /f Makefile.vc mode=dll VC=15 MACHINE=x64 ^
     WITH_SSL=static SSL_PATH=%SSL_ROOT% ^
     ENABLE_IDN=no ^
     ENABLE_IPV6=yes ^
-    DEBUG=yes
+    DEBUG=no
 popd
 
 mkdir %PREBUILT_DIR%
-set BUILD_DIR=%PROJ_ROOT%\%CURL_ROOT%\builds\libcurl-vc15-x64-debug-dll-ssl-static-ipv6-sspi-nghttp2-static
+set BUILD_DIR=%PROJ_ROOT%\%CURL_ROOT%\builds\libcurl-vc15-x64-release-dll-ssl-static-ipv6-sspi-nghttp2-static
 xcopy %BUILD_DIR%\include %PREBUILT_DIR%\include\ /s /e /y /i
 xcopy %BUILD_DIR%\lib %PREBUILT_DIR%\lib\ /s /e /y /i
 xcopy %BUILD_DIR%\bin\*.dll %PREBUILT_DIR%\lib\ /s /e /y /i
