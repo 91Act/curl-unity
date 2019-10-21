@@ -12,7 +12,6 @@ namespace CurlUnity
     public class CurlEasy : IDisposable
     {
         public delegate void PerformCallback(CURLE result, CurlEasy easy);
-        private static List<int> validResponseCode = new List<int> { 507, 509, 510, 400, 403, 404, 200 };
 
         public Uri uri { get; set; }
         public string method { get; set; } = "GET";
@@ -27,6 +26,7 @@ namespace CurlUnity
         public int outSpeedLimit { get; set; } = 0;
         public int inSpeedLimit { get; set; } = 0;
         public bool insecure { get; set; }
+        public bool disableExpect { get; set; } = true;
         public byte[] outData { get; set; }
         public byte[] inData { get; private set; }
         public string httpVersion { get; private set; }
@@ -390,6 +390,10 @@ namespace CurlUnity
 
                 // Fill request header
                 var requestHeader = new CurlSlist(IntPtr.Zero);
+                if (disableExpect)
+                {
+                    requestHeader.Append("Expect:");
+                }
                 requestHeader.Append($"Content-Type:{contentType}");
                 if (userHeader != null)
                 {
@@ -516,20 +520,16 @@ namespace CurlUnity
                         inData = ms.ToArray();
                     }
 
-                    if (status == 200)
-                    {
-                        done = true;
-                    }
-                    else if(validResponseCode.Contains(status))
-                    {
-                        done = true;
-                    }
-                    else if (status / 100 == 3)
+                    if (status / 100 == 3)
                     {
                         if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
                         {
                             uri = new Uri(location);
                         }
+                    }
+                    else
+                    {
+                        done = true;
                     }
                 }
                 else
@@ -561,12 +561,12 @@ namespace CurlUnity
 #if UNITY_EDITOR
                 var colorize = true;
 #else
-            var colorize = false;
+	            var colorize = false;
 #endif
 
                 if (colorize)
                 {
-                    sb.AppendLine($"<color={(status == 200 ? "green" : "red")}><b>[{method.ToUpper()}]</b></color> {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
+                    sb.AppendLine($"<color={((status >= 200 && status <= 299) ? "green" : "red")}><b>[{method.ToUpper()}]</b></color> {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
                 }
                 else sb.AppendLine($"[{method.ToUpper()}] {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
 
