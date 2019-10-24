@@ -77,7 +77,6 @@ void Start()
     {
         var easy = new CurlEasy();
         easy.url = "https://nghttp2.org";
-        easy.useHttp2 = true;
         easy.timeout = 5000;
         // NOTICE: This callback may be invoked on other thread
         easy.performCallback = OnPerformCallback;
@@ -102,7 +101,6 @@ async void Start()
 {
     var easy = new CurlEasy();
     easy.url = "https://nghttp2.org";
-    easy.useHttp2 = true;
     easy.timeout = 5000;
     if (await easy.PerformAsync() == CURLE.OK)
     {
@@ -118,7 +116,6 @@ void Start()
 {
     var easy = new CurlEasy();
     easy.url = "https://nghttp2.org";
-    easy.useHttp2 = true;
     easy.timeout = 5000;
     if (easy.Perform() == CURLE.OK)
     {
