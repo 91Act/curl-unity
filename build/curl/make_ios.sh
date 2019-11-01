@@ -1,52 +1,36 @@
-PWD=`pwd`
+PROJ=`pwd`
 CURL_VERSION=curl-7.64.0
-
-if [ ! -d $CURL_VERSION ]; then    
-    tar xzf ${CURL_VERSION}.tar.gz
-fi
+CURL_ROOT=$PROJ/$CURL_VERSION
+TOOLCHAIN=$PROJ/../cmake/ios.toolchain.cmake
 
 do_make()
 {
-    BUILD_DIR=$PWD/build/ios
-    PREBUILT_DIR=$PWD/prebuilt/ios
-    OPENSSL_ROOT=$PWD/../openssl/prebuilt/ios
-    NGHTTP2_ROOT=$PWD/../nghttp2/prebuilt/ios
+    BUILD_DIR=$PROJ/build/ios
+    PREBUILT_DIR=$PROJ/prebuilt/ios
+    OPENSSL_ROOT=$PROJ/../openssl/prebuilt/ios
+    NGHTTP2_ROOT=$PROJ/../nghttp2/prebuilt/ios
 
-    XCODE=`xcode-select --print-path`
-    SDK_ROOT="${XCODE}/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk"
-    SDK_VERSION=12.1
-
-    export CC="${XCODE}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang"
-    export CFLAGS="-arch arm64 -pipe -Os -gdwarf-2 -isysroot ${SDK_ROOT} -miphoneos-version-min=${SDK_VERSION}"    
-    
+    mkdir -p $BUILD_DIR
     (
-        cd $CURL_VERSION
-        ./configure \
-            --host=arm-apple-darwin \
-            --prefix=$PREBUILT_DIR \
-            --with-ssl=$OPENSSL_ROOT \
-            --with-nghttp2=$NGHTTP2_ROOT \
-            --enable-ipv6 \
-            --disable-ftp \
-            --disable-file \
-            --disable-ldap \
-            --disable-ldaps \
-            --disable-rtsp \
-            --disable-proxy \
-            --disable-dict \
-            --disable-telnet \
-            --disable-tftp \
-            --disable-pop3 \
-            --disable-imap \
-            --disable-smb \
-            --disable-smtp \
-            --disable-gopher \
-            --disable-manual \
-            --disable-shared
-
-        make clean
-        make install -j8
+        cd $BUILD_DIR
+        cmake $CURL_ROOT \
+            -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
+            -DDEPLOYMENT_TARGET=12.0 \
+            -DENABLE_BITCODE=1 \
+            -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT \
+            -DOPENSSL_INCLUDE_DIR=$OPENSSL_ROOT/include \
+            -DOPENSSL_CRYPTO_LIBRARY=$OPENSSL_ROOT/lib/libcrypto.a \
+            -DOPENSSL_SSL_LIBRARY=$OPENSSL_ROOT/lib/libssl.a \
+            -DNGHTTP2_INCLUDE_DIR=$NGHTTP2_ROOT/include \
+            -DNGHTTP2_LIBRARY=$NGHTTP2_ROOT/lib/libnghttp2.a \
+            -DUSE_NGHTTP2=ON \
+            -DHTTP_ONLY=ON \
+            -DCMAKE_USE_LIBSSH2=OFF \
+            -DBUILD_TESTING=OFF \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_CURL_EXE=OFF
     )
+    cmake --build $BUILD_DIR --config Release --target install -j8
 }
 
 do_make
