@@ -179,24 +179,6 @@ curl_share_setopt(struct Curl_share *share, CURLSHoption option, ...)
   return res;
 }
 
-/* IL2CPP Compatible */
-/* !checksrc! disable LONGLINE all */
-CURL_EXTERN CURLSHcode curl_share_setopt_int(CURLSH *share, CURLSHoption option, int arg)
-{
-  return curl_share_setopt(share, option, arg);
-}
-
-CURL_EXTERN CURLSHcode curl_share_setopt_str(CURLSH *share, CURLSHoption option, const char *arg)
-{
-  return curl_share_setopt(share, option, arg);
-}
-
-CURL_EXTERN CURLSHcode curl_share_setopt_ptr(CURLSH *share, CURLSHoption option, void *arg)
-{
-  return curl_share_setopt(share, option, arg);
-}
-/* !checksrc! enable LONGLINE */
-
 CURLSHcode
 curl_share_cleanup(struct Curl_share *share)
 {
