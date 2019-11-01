@@ -2814,6 +2814,27 @@ CURLMcode curl_multi_setopt(struct Curl_multi *multi,
   return res;
 }
 
+/* IL2CPP Compatible */
+/* !checksrc! disable LONGLINE all */
+CURL_EXTERN CURLMcode curl_multi_setopt_int(CURLM *multi_handle,
+                                        CURLMoption option, int arg)
+{
+  return curl_multi_setopt(multi_handle, option, arg);
+}
+
+CURL_EXTERN CURLMcode curl_multi_setopt_str(CURLM *multi_handle,
+                                        CURLMoption option, const char *arg)
+{
+  return curl_multi_setopt(multi_handle, option, arg);
+}
+
+CURL_EXTERN CURLMcode curl_multi_setopt_ptr(CURLM *multi_handle,
+                                        CURLMoption option, void *arg)
+{
+  return curl_multi_setopt(multi_handle, option, arg);
+}
+/* !checksrc! enable LONGLINE */
+
 /* we define curl_multi_socket() in the public multi.h header */
 #undef curl_multi_socket
 
