@@ -2,11 +2,11 @@
 
 This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) with [http2](https://github.com/nghttp2/nghttp2)/[openssl](https://github.com/openssl/openssl) enabled.
 
-## Supported platforms
+## Prebuilt platforms
 
 * Windows x64
 * macOS 64bit
-* iOS arm64/arm64e
+* iOS arm64
 * Android armv7/arm64/x86
 
 ## Library versions
@@ -22,10 +22,9 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 ## Requirements
 
 * [CMake](https://cmake.org/download/) is required for all platforms.
-* [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) is requried for macOS/iOS/Android. It could be installed via `brew install pkg-config` on macOS.
 * [NDK r16b](https://developer.android.com/ndk/downloads/older_releases.html) is required for Android.
 * Xcode is required for macOS/iOS.
-* Visual Studio 2017 and [Perl](https://www.activestate.com/products/activeperl/downloads/) is required for Windows.
+* Visual Studio 2017 is required for Windows.
 
 ## Scripts
 
@@ -53,11 +52,11 @@ Build `curl.dll` for Windows. Please use this script on Windows.
 
 Copy `Assets/curl-unity` to anywhere under your Unity project and done.
 
-Besides, for a better performance you could enable `Allow unsafe code` and add `ALLOW_UNSAFE` to the `Scripting Define Symbols` in the project settings.
+## Optional
+
+For a better performance you could enable `Allow unsafe code` and add `ALLOW_UNSAFE` to the `Scripting Define Symbols` in the project settings.
 
 ![project settings](doc/project_settings.png)
-
-> This is optional
 
 # Usage
 
