@@ -19,6 +19,7 @@
 **/Makefile
 **/pkgconfig
 **/prebuilt/**/share
+**/prebuilt/**/cmake
 build/**/build
 Library
 Logs

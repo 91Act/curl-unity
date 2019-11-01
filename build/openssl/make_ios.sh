@@ -8,7 +8,7 @@ do_make()
 {
     PREBUILT_DIR=`pwd`/prebuilt/ios
     export XCODE=`xcode-select --print-path`
-    export CC='${XCODE}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang'
+    export CC='${XCODE}/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -fembed-bitcode'
     export CROSS_TOP=${XCODE}/Platforms/iPhoneOS.platform/Developer
     export CROSS_SDK=iPhoneOS.sdk
 

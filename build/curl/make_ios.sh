@@ -15,6 +15,7 @@ do_make()
         cd $BUILD_DIR
         cmake $CURL_ROOT \
             -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
+            -DIOS_PLATFORM=OS64 \
             -DDEPLOYMENT_TARGET=12.0 \
             -DENABLE_BITCODE=1 \
             -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT \
