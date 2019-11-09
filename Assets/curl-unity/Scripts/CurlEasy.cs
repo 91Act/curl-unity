@@ -30,6 +30,7 @@ namespace CurlUnity
         public int inSpeedLimit { get; set; } = 0;
         public bool insecure { get; set; }
         public bool disableExpect { get; set; } = true;
+        public bool followRedirect { get; set; } = true;
         public byte[] outData { get; set; }
         public byte[] inData { get; private set; }
         public string httpVersion { get; private set; }
@@ -573,9 +574,13 @@ namespace CurlUnity
 
                     if (status / 100 == 3)
                     {
-                        if (GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
+                        if (followRedirect && GetInfo(CURLINFO.REDIRECT_URL, out string location) == CURLE.OK)
                         {
                             uri = new Uri(location);
+                        }
+                        else
+                        {
+                            done = true;
                         }
                     }
                     else
