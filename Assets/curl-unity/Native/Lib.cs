@@ -9,11 +9,13 @@ namespace CurlUnity
     public static class Delegates
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int WriteFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
+        public delegate long WriteFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
+        public delegate long HeaderFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, int size, IntPtr userdata);
+        public delegate long ProgressFunction(IntPtr clientp, long dltotal, long dlnow, long ultotal, long ulnow);
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate long DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, long size, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void LockFunction(IntPtr ptr, CURLLOCKDATA data, CURLLOCKACCESS access, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -66,6 +68,8 @@ namespace CurlUnity
         public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, Delegates.HeaderFunction arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, Delegates.DebugFunction arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, Delegates.ProgressFunction arg);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_perform(IntPtr easyPtr);

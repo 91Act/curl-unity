@@ -91,7 +91,7 @@ namespace CurlUnity
                 workingEasies[(IntPtr)easy] = easy;
                 workingCount = workingEasies.Count;
             }
-            if (workingCount == 1)
+            if (workingCount == 1 && CurlMultiUpdater.Instance != null)
             {
                 CurlMultiUpdater.Instance.AddMulti(this);
             }
@@ -109,7 +109,7 @@ namespace CurlUnity
                 workingCount = workingEasies.Count;
             }
 
-            if (workingCount == 0)
+            if (workingCount == 0 && CurlMultiUpdater.Instance != null)
             {
                 CurlMultiUpdater.Instance.RemoveMulti(this);
             }

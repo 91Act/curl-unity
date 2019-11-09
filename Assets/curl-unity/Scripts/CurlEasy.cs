@@ -12,11 +12,14 @@ namespace CurlUnity
     public class CurlEasy : IDisposable
     {
         public delegate void PerformCallback(CURLE result, CurlEasy easy);
+        public delegate long ProgressCallback(long dltotal, long dlnow, long ultotal, long ulnow, CurlEasy easy);
 
         public Uri uri { get; set; }
         public string method { get; set; } = "GET";
         public string contentType { get; set; } = "application/text";
         public string outputPath { get; set; }
+        public long rangeStart { get; set; } = 0;
+        public long rangeEnd { get; set; } = 0;
         public int timeout { get; set; } = 0;
         public int connectionTimeout { get; set; } = 5000;
         public int maxRetryCount { get; set; } = 5;
@@ -34,6 +37,7 @@ namespace CurlUnity
         public string message { get; private set; }
         public bool running { get; private set; }
         public PerformCallback performCallback { get; set; }
+        public ProgressCallback progressCallback { get; set; } 
         public bool debug { get; set; }
         public CurlDecoder decoder { get; set; }
 
@@ -218,6 +222,11 @@ namespace CurlUnity
             return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
         }
 
+        public CURLE SetOpt(CURLOPT options, Delegates.ProgressFunction value)
+        {
+            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+        }
+
         #endregion
         #region GetInfo
         public CURLE GetInfo(CURLINFO info, out long value)
@@ -288,7 +297,6 @@ namespace CurlUnity
             return result;
         }
 
-        [Obsolete("")]
         public async Task<CURLE> PerformAsync()
         {
             return await Task.Run(Perform);
@@ -373,17 +381,29 @@ namespace CurlUnity
                 thisHandle = GCHandle.Alloc(this);
 
                 SetOpt(CURLOPT.URL, uri.AbsoluteUri);
-                SetOpt(CURLOPT.CUSTOMREQUEST, method);
+
+                var upperMethod = method.ToUpper();
+                switch(upperMethod)
+                {
+                    case "GET":
+                        SetOpt(CURLOPT.HTTPGET, true);
+                        break;
+                    case "HEAD":
+                        SetOpt(CURLOPT.NOBODY, true);
+                        break;
+                    case "POST":
+                        SetOpt(CURLOPT.POST, true);
+                        break;
+                    default:
+                        SetOpt(CURLOPT.CUSTOMREQUEST, method);
+                        break;
+                }
 
                 SetOpt(CURLOPT.HTTP_VERSION, (long)HTTPVersion.VERSION_2TLS);
                 SetOpt(CURLOPT.PIPEWAIT, true);
-
-
-                if (insecure)
-                {
-                    SetOpt(CURLOPT.SSL_VERIFYHOST, false);
-                    SetOpt(CURLOPT.SSL_VERIFYPEER, false);
-                }
+                
+                SetOpt(CURLOPT.SSL_VERIFYHOST, !insecure);
+                SetOpt(CURLOPT.SSL_VERIFYPEER, !insecure);
 
                 // Ca cert path
                 SetOpt(CURLOPT.CAINFO, s_capath);
@@ -416,6 +436,18 @@ namespace CurlUnity
                 SetOpt(CURLOPT.HEADERFUNCTION, (Delegates.HeaderFunction)HeaderFunction);
                 SetOpt(CURLOPT.HEADERDATA, (IntPtr)thisHandle);
 
+                bool rangeRequest = rangeStart > 0 || rangeEnd > 0;
+
+                if (rangeRequest)
+                {
+                    if (rangeEnd == 0) SetOpt(CURLOPT.RANGE, $"{rangeStart}-");
+                    else SetOpt(CURLOPT.RANGE, $"{rangeStart}-{rangeEnd}");
+                }
+                else
+                {
+                    SetOpt(CURLOPT.RANGE, IntPtr.Zero);
+                }
+
                 // Handle response body
                 recievedDataLength = 0;
                 if (string.IsNullOrEmpty(outputPath))
@@ -426,7 +458,7 @@ namespace CurlUnity
                 {
                     var dir = Path.GetDirectoryName(outputPath);
                     if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
-                    responseBodyStream = new FileStream(outputPath, FileMode.OpenOrCreate);
+                    responseBodyStream = new FileStream(outputPath, rangeRequest ? FileMode.Append : FileMode.OpenOrCreate);
                 }
                 SetOpt(CURLOPT.WRITEFUNCTION, (Delegates.WriteFunction)WriteFunction);
                 SetOpt(CURLOPT.WRITEDATA, (IntPtr)thisHandle);
@@ -438,6 +470,25 @@ namespace CurlUnity
                     SetOpt(CURLOPT.VERBOSE, true);
                     SetOpt(CURLOPT.DEBUGFUNCTION, DebugFunction);
                     SetOpt(CURLOPT.DEBUGDATA, (IntPtr)thisHandle);
+                }
+                else
+                {
+                    SetOpt(CURLOPT.VERBOSE, false);
+                    SetOpt(CURLOPT.DEBUGFUNCTION, IntPtr.Zero);
+                    SetOpt(CURLOPT.DEBUGDATA, IntPtr.Zero);
+                }
+
+                if (progressCallback != null)
+                {
+                    SetOpt(CURLOPT.NOPROGRESS, false);
+                    SetOpt(CURLOPT.XFERINFOFUNCTION, ProgressFunction);
+                    SetOpt(CURLOPT.XFERINFODATA, (IntPtr)thisHandle);
+                }
+                else
+                {
+                    SetOpt(CURLOPT.NOPROGRESS, true);
+                    SetOpt(CURLOPT.XFERINFOFUNCTION, IntPtr.Zero);
+                    SetOpt(CURLOPT.XFERINFODATA, IntPtr.Zero);
                 }
 
                 // Timeout
@@ -659,40 +710,40 @@ namespace CurlUnity
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.HeaderFunction))]
-        private static int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata)
+        private static long HeaderFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata)
         {
             size = size * nmemb;
             var thiz = ((GCHandle)userdata).Target as CurlEasy;
 #if ALLOW_UNSAFE
             unsafe
             {
-                var ums = new UnmanagedMemoryStream((byte*)ptr, size);
+                var ums = new UnmanagedMemoryStream((byte*)ptr, (int)size);
                 ums.CopyTo(thiz.responseHeaderStream);
             }
 #else
             var bytes = thiz.AcquireBuffer(size);
-            Marshal.Copy(ptr, bytes, 0, size);
-            thiz.responseHeaderStream.Write(bytes, 0, size);
+            Marshal.Copy(ptr, bytes, 0, (int)size);
+            thiz.responseHeaderStream.Write(bytes, 0, (int)size);
 #endif
 
             return size;
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.WriteFunction))]
-        private static int WriteFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata)
+        private static long WriteFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata)
         {
             size = size * nmemb;
             var thiz = ((GCHandle)userdata).Target as CurlEasy;
 #if ALLOW_UNSAFE
             unsafe
             {
-                var ums = new UnmanagedMemoryStream((byte*)ptr, size);
+                var ums = new UnmanagedMemoryStream((byte*)ptr, (int)size);
                 ums.CopyTo(thiz.responseBodyStream);
             }
 #else
             var bytes = thiz.AcquireBuffer(size);
-            Marshal.Copy(ptr, bytes, 0, size);
-            thiz.responseBodyStream.Write(bytes, 0, size);
+            Marshal.Copy(ptr, bytes, 0, (int)size);
+            thiz.responseBodyStream.Write(bytes, 0, (int)size);
 #endif
             thiz.recievedDataLength += size;
 
@@ -700,7 +751,7 @@ namespace CurlUnity
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.DebugFunction))]
-        private static int DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, int size, IntPtr userdata)
+        private static long DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, long size, IntPtr userdata)
         {
             if (type == CURLINFODEBUG.HEADER_OUT)
             {
@@ -709,13 +760,13 @@ namespace CurlUnity
 #if ALLOW_UNSAFE
                 unsafe
                 {
-                    var ums = new UnmanagedMemoryStream((byte*)data, size);
+                    var ums = new UnmanagedMemoryStream((byte*)data, (int)size);
                     sr = new StreamReader(ums);
                 }
 #else
                 var bytes = thiz.AcquireBuffer(size);
-                Marshal.Copy(data, bytes, 0, size);
-                sr = new StreamReader(new MemoryStream(bytes, 0, size));
+                Marshal.Copy(data, bytes, 0, (int)size);
+                sr = new StreamReader(new MemoryStream(bytes, 0, (int)size));
 #endif
                 // Handle first line
                 var firstLine = sr.ReadLine();
@@ -745,6 +796,13 @@ namespace CurlUnity
                 }
             }
             return 0;
+        }
+
+        [AOT.MonoPInvokeCallback(typeof(Delegates.ProgressFunction))]
+        private static long ProgressFunction(IntPtr clientp, long dltotal, long dlnow, long ultotal, long ulnow)
+        {
+            var thiz = ((GCHandle)clientp).Target as CurlEasy;
+            return thiz.progressCallback(dltotal, dlnow, ultotal, ulnow, thiz);
         }
 
         public string Escape(string data)

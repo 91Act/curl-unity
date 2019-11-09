@@ -9,7 +9,7 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 * iOS arm64
 * Android armv7/arm64/x86
 
-## Library versions
+## Libraries 
 
 |Name|Version|
 |-|-|
@@ -62,8 +62,7 @@ For a better performance you could enable `Allow unsafe code` and add `ALLOW_UNS
 
 ## Select single thread/mutli thread mode
 
-Attach one `CurlMultiUpdater` component to any persistent gameobject, by `DontDestroyOnLoad`, and select `multiThread` on or not.
-If the `CurlMultiUpdater` was not pre-created a default instance with `multiThread` on will be auto created.
+A `CurlMultiUpdater` component is needed to be created before any request and then you could check `multiThread` on or not.
 
 ## Non-blocking multi perform
 
@@ -94,7 +93,10 @@ void OnPerformCallback(CURLE result, CurlEasy easy)
 }
 ```
 
-## Non-blocking easy perform (Deprecated)
+## Non-blocking easy perform
+
+> Not recommended. You should take care of the thread safe issues and it can't be canceled before done.
+
 ```csharp
 async void Start()
 {

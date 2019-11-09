@@ -27,4 +27,4 @@ cmake %CURL_ROOT% ^
     -DBUILD_SHARED_LIBS=ON
 popd
 
-cmake --build %BUILD_DIR% --config Release --target install
+cmake --build %BUILD_DIR% --config Debug --target install

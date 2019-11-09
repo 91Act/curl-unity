@@ -29,15 +29,6 @@ namespace CurlUnity
         {
             get
             {
-                if (instance == null)
-                {
-                    var go = new GameObject("CurlMultiUpdater")
-                    {
-                        hideFlags = HideFlags.DontSave
-                    };
-                    DontDestroyOnLoad(go);
-                    go.AddComponent<CurlMultiUpdater>();
-                }
                 return instance;
             }
         }
