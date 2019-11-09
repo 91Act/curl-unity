@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using UnityEngine;
 
-public class SampleResumeDownload : MonoBehaviour
+public class ResumeDownload : MonoBehaviour
 {
     public string m_link;
     public string m_localPath;
@@ -17,10 +17,10 @@ public class SampleResumeDownload : MonoBehaviour
     void Start()
     {
         m_multi = new CurlMulti();
-        ResumeDownload();
+        StartDownload();
     }
 
-    async void ResumeDownload()
+    async void StartDownload()
     {
         var easy = new CurlEasy();
         easy.uri = new Uri(m_link);

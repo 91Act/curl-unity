@@ -197,7 +197,7 @@ GameObject:
   - component: {fileID: 1550258504}
   - component: {fileID: 1550258505}
   m_Layer: 0
-  m_Name: CurlTest
+  m_Name: Sample
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
