@@ -12,7 +12,7 @@ namespace CurlUnity
     public class CurlEasy : IDisposable
     {
         public delegate void PerformCallback(CURLE result, CurlEasy easy);
-        public delegate long ProgressCallback(long dltotal, long dlnow, long ultotal, long ulnow, CurlEasy easy);
+        public delegate void ProgressCallback(long dltotal, long dlnow, long ultotal, long ulnow, CurlEasy easy);
 
         public Uri uri { get; set; }
         public string method { get; set; } = "GET";
@@ -309,7 +309,7 @@ namespace CurlUnity
             {
                 running = true;
                 retryCount = maxRetryCount;
-                multi = _multi ?? CurlMulti.DefaultInstance;
+                multi = _multi ?? CurlMultiUpdater.Instance.DefaultMulti;
 
                 Prepare();
                 multi.AddEasy(this);
@@ -350,6 +350,17 @@ namespace CurlUnity
             else
             {
                 running = false;
+            }
+        }
+
+        private void OnProgress(long dltotal, long dlnow, long ultotal, long ulnow)
+        {
+            if (progressCallback != null)
+            {
+                new Task(() =>
+                {
+                    progressCallback(dltotal, dlnow, ultotal, ulnow, this);
+                }).Start(taskScheduler);
             }
         }
 
@@ -807,7 +818,8 @@ namespace CurlUnity
         private static long ProgressFunction(IntPtr clientp, long dltotal, long dlnow, long ultotal, long ulnow)
         {
             var thiz = ((GCHandle)clientp).Target as CurlEasy;
-            return thiz.progressCallback(dltotal, dlnow, ultotal, ulnow, thiz);
+            thiz.OnProgress(dltotal, dlnow, ultotal, ulnow);
+            return 0;
         }
 
         public string Escape(string data)

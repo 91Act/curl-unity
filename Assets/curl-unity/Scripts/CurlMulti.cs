@@ -12,21 +12,6 @@ namespace CurlUnity
         private CurlShare share;
         private Dictionary<IntPtr, CurlEasy> workingEasies = new Dictionary<IntPtr, CurlEasy>();
 
-        private static CurlMulti defaultInstance;
-
-        public static CurlMulti DefaultInstance
-        {
-            get
-            {
-                if (defaultInstance == null)
-                {
-                    defaultInstance = new CurlMulti();
-                }
-
-                return defaultInstance;
-            }
-        }
-
         public CurlMulti(IntPtr ptr = default)
         {
             if (ptr != IntPtr.Zero)
@@ -48,7 +33,7 @@ namespace CurlUnity
         {
             if (multiPtr != IntPtr.Zero)
             {
-                CurlMultiUpdater.Instance.RemoveMulti(this);
+                if (CurlMultiUpdater.Instance != null) CurlMultiUpdater.Instance.RemoveMulti(this);
                 Lib.curl_multi_cleanup(multiPtr);
                 multiPtr = IntPtr.Zero;
             }
@@ -91,6 +76,7 @@ namespace CurlUnity
                 workingEasies[(IntPtr)easy] = easy;
                 workingCount = workingEasies.Count;
             }
+
             if (workingCount == 1 && CurlMultiUpdater.Instance != null)
             {
                 CurlMultiUpdater.Instance.AddMulti(this);

@@ -12,6 +12,7 @@ namespace CurlUnity
         public int busyInterval = 1;
         public int idleInterval = 50;
 
+        private CurlMulti defaultMulti;
         private List<CurlMulti> multiList = new List<CurlMulti>();
         private List<CurlMulti> penddingAdd = new List<CurlMulti>();
         private List<CurlMulti> penddingRemove = new List<CurlMulti>();
@@ -33,12 +34,21 @@ namespace CurlUnity
             }
         }
 
+        public CurlMulti DefaultMulti
+        {
+            get
+            {
+                return defaultMulti;
+            }
+        }
+
         private void Awake()
         {
             if (CurlLog.Assert(instance == null, "Only one CurlMultiUpdater instance is allowed"))
             {
                 instance = this;
             }
+            defaultMulti = new CurlMulti();
         }
 
         private void Start()
@@ -99,6 +109,12 @@ namespace CurlUnity
             foreach (var multi in multiList)
             {
                 multi.Abort();
+            }
+
+            if (defaultMulti != null)
+            {
+                defaultMulti.Abort();
+                defaultMulti = null;
             }
         }
 

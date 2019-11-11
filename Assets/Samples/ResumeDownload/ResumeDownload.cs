@@ -49,7 +49,6 @@ public class ResumeDownload : MonoBehaviour
                     {
                         m_nowBytes = dlnow;
                         m_totalBytes = dltotal;
-                        return 0;
                     };
                     easy.performCallback = (result, _) =>
                     {
