@@ -14,6 +14,7 @@ do_make()
     (
         cd $BUILD_DIR
         cmake $CURL_ROOT \
+            -DCMAKE_INSTALL_PREFIX=$PREBUILT_DIR \
             -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
             -DIOS_PLATFORM=OS64 \
             -DDEPLOYMENT_TARGET=12.0 \
