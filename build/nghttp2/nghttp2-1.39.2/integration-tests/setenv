@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+libdir="/home/tatsuhiro/workspace/nghttp2-release/lib"
+if [ -d "$libdir/.libs" ]; then
+    libdir="$libdir/.libs"
+fi
+
+export CGO_CFLAGS="-I/home/tatsuhiro/workspace/nghttp2-release/lib/includes -I/home/tatsuhiro/workspace/nghttp2-release/lib/includes"
+export CGO_LDFLAGS="-L$libdir"
+export LD_LIBRARY_PATH="$libdir"
+export GODEBUG=cgocheck=0
+"$@"

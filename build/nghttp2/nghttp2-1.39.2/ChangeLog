@@ -1,0 +1,33 @@
+commit 957abacf9920a42becdf1935d14ca48d260bb8e7 (HEAD, tag: v1.39.2, origin/v1.39.x, origin/HEAD, v1.39.x)
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2019-08-13
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2019-08-13
+
+    Bump up version number to 1.39.2, LT revision to 32:0:18
+
+commit 83d362c6d21f76599b86e7b94cd1992288a1d43c
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2019-06-25
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2019-08-13
+
+    Don't read too greedily
+
+commit a76d0723b5f52902139ff453e0ec840673e86e75
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2019-06-25
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2019-08-13
+
+    Add nghttp2_option_set_max_outbound_ack
+
+commit db2f612a30d54aa152ce5530fa1d683738baa4d1
+Author:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+AuthorDate: 2019-08-06
+Commit:     Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+CommitDate: 2019-08-13
+
+    nghttpx: Fix request stall
+    
+    Fix request stall if backend connection is reused and buffer is full.

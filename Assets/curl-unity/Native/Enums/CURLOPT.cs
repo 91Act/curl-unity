@@ -5,6 +5,7 @@ namespace CurlUnity
         public const int LONG = 0;
         public const int OBJECTPOINT = 10000;
         public const int STRINGPOINT = 10000;
+        public const int SLISTPOINT = 10000;
         public const int FUNCTIONPOINT = 20000;
         public const int OFF_T = 30000;
     }
@@ -101,7 +102,7 @@ namespace CurlUnity
 
         /* This points to a linked list of headers, struct curl_slist kind. This
            list is also used for RTSP (in spite of its name) */
-        HTTPHEADER = CURLOPTTYPE.OBJECTPOINT + 23,
+        HTTPHEADER = CURLOPTTYPE.SLISTPOINT + 23,
 
         /* This points to a linked list of post entries, struct curl_httppost */
         HTTPPOST = CURLOPTTYPE.OBJECTPOINT + 24,
@@ -116,7 +117,7 @@ namespace CurlUnity
         CRLF = CURLOPTTYPE.LONG + 27,
 
         /* send linked-list of QUOTE commands */
-        QUOTE = CURLOPTTYPE.OBJECTPOINT + 28,
+        QUOTE = CURLOPTTYPE.SLISTPOINT + 28,
 
         /* send FILE * or void * to store headers to, if you use a callback it
            is simply passed to the callback unmodified */
@@ -151,7 +152,7 @@ namespace CurlUnity
         /* 38 is not used */
 
         /* send linked-list of post-transfer QUOTE commands */
-        POSTQUOTE = CURLOPTTYPE.OBJECTPOINT + 39,
+        POSTQUOTE = CURLOPTTYPE.SLISTPOINT + 39,
 
         OBSOLETE40 = CURLOPTTYPE.OBJECTPOINT + 40, /* OBSOLETE, do not use! */
 
@@ -227,7 +228,7 @@ namespace CurlUnity
         FILETIME = CURLOPTTYPE.LONG + 69,
 
         /* This points to a linked list of telnet options */
-        TELNETOPTIONS = CURLOPTTYPE.OBJECTPOINT + 70,
+        TELNETOPTIONS = CURLOPTTYPE.SLISTPOINT + 70,
 
         /* Max amount of cached alive connections */
         MAXCONNECTS = CURLOPTTYPE.LONG + 71,
@@ -311,7 +312,7 @@ namespace CurlUnity
         DNS_CACHE_TIMEOUT = CURLOPTTYPE.LONG + 92,
 
         /* send linked-list of pre-transfer QUOTE commands */
-        PREQUOTE = CURLOPTTYPE.OBJECTPOINT + 93,
+        PREQUOTE = CURLOPTTYPE.SLISTPOINT + 93,
 
         /* set the debug function */
         DEBUGFUNCTION = CURLOPTTYPE.FUNCTIONPOINT + 94,
@@ -351,7 +352,7 @@ namespace CurlUnity
         PRIVATE = CURLOPTTYPE.OBJECTPOINT + 103,
 
         /* Set aliases for HTTP 200 in the HTTP Response header */
-        HTTP200ALIASES = CURLOPTTYPE.OBJECTPOINT + 104,
+        HTTP200ALIASES = CURLOPTTYPE.SLISTPOINT + 104,
 
         /* Continue to send authentication (user+password) when following locations,
            even when hostname changed. This can potentially send off the name
@@ -368,9 +369,9 @@ namespace CurlUnity
            Note that setting multiple bits may cause extra network round-trips. */
         HTTPAUTH = CURLOPTTYPE.LONG + 107,
 
-        /* Set the ssl context callback function, currently only for OpenSSL ssl_ctx
-           in second argument. The function must be matching the
-           curl_ssl_ctx_callback proto. */
+        /* Set the ssl context callback function, currently only for OpenSSL or
+           WolfSSL ssl_ctx, or mbedTLS mbedtls_ssl_config in the second argument.
+           The function must match the curl_ssl_ctx_callback prototype. */
         SSL_CTX_FUNCTION = CURLOPTTYPE.FUNCTIONPOINT + 108,
 
         /* Set the userdata for the ssl context callback function's third
@@ -623,8 +624,7 @@ namespace CurlUnity
 
         /* set the bitmask for the protocols that libcurl is allowed to follow to,
            as a subset of the PROTOCOLS ones. That means the protocol needs
-           to be set in both bitmasks to be allowed to get redirected to. Defaults
-           to all protocols except FILE and SCP. */
+           to be set in both bitmasks to be allowed to get redirected to. */
         REDIR_PROTOCOLS = CURLOPTTYPE.LONG + 182,
 
         /* set the SSH knownhost file name to use */
@@ -641,7 +641,7 @@ namespace CurlUnity
         MAIL_FROM = CURLOPTTYPE.STRINGPOINT + 186,
 
         /* set the list of SMTP mail receiver(s) */
-        MAIL_RCPT = CURLOPTTYPE.OBJECTPOINT + 187,
+        MAIL_RCPT = CURLOPTTYPE.SLISTPOINT + 187,
 
         /* FTP: send PRET before PASV */
         FTP_USE_PRET = CURLOPTTYPE.LONG + 188,
@@ -691,7 +691,7 @@ namespace CurlUnity
         FNMATCH_DATA = CURLOPTTYPE.OBJECTPOINT + 202,
 
         /* send linked-list of name:port:address sets */
-        RESOLVE = CURLOPTTYPE.OBJECTPOINT + 203,
+        RESOLVE = CURLOPTTYPE.SLISTPOINT + 203,
 
         /* Set a username for authenticated TLS */
         TLSAUTH_USERNAME = CURLOPTTYPE.STRINGPOINT + 204,
@@ -781,7 +781,7 @@ namespace CurlUnity
 
         /* This points to a linked list of headers used for proxy requests only,
            struct curl_slist kind */
-        PROXYHEADER = CURLOPTTYPE.OBJECTPOINT + 228,
+        PROXYHEADER = CURLOPTTYPE.SLISTPOINT + 228,
 
         /* Pass in a bitmask of "header options" */
         HEADEROPT = CURLOPTTYPE.LONG + 229,
@@ -828,7 +828,7 @@ namespace CurlUnity
 
         /* Linked-list of host:port:connect-to-host:connect-to-port,
            overrides the URL's host:port (only for the network layer) */
-        CONNECT_TO = CURLOPTTYPE.OBJECTPOINT + 243,
+        CONNECT_TO = CURLOPTTYPE.SLISTPOINT + 243,
 
         /* Set TCP Fast Open */
         TCP_FASTOPEN = CURLOPTTYPE.LONG + 244,
@@ -965,6 +965,19 @@ namespace CurlUnity
 
         /* set this to 1L to allow HTTP/0.9 responses or 0L to disallow */
         HTTP09_ALLOWED = CURLOPTTYPE.LONG + 285,
+
+        /* alt-svc control bitmask */
+        ALTSVC_CTRL = CURLOPTTYPE.LONG + 286,
+
+        /* alt-svc cache file name to possibly read from/write to */
+        ALTSVC = CURLOPTTYPE.STRINGPOINT + 287,
+
+        /* maximum age of a connection to consider it for reuse (in seconds) */
+        MAXAGE_CONN = CURLOPTTYPE.LONG + 288,
+
+        /* SASL authorisation identity */
+        SASL_AUTHZID = CURLOPTTYPE.STRINGPOINT + 289,
+
 
         LASTENTRY /* the last unused */
     }

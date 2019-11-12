@@ -1,5 +1,5 @@
 PROJ=`pwd`
-CURL_VERSION=curl-7.64.0
+CURL_VERSION=curl-7.67.0
 CURL_ROOT=$PROJ/$CURL_VERSION
 
 do_make()

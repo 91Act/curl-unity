@@ -51,6 +51,9 @@ namespace CurlUnity
         /* This is the argument passed to the server push callback */
         PUSHDATA = CURLOPTTYPE.OBJECTPOINT + 15,
 
+        /* maximum number of concurrent streams to support on a connection */
+        MAX_CONCURRENT_STREAMS = CURLOPTTYPE.LONG + 16,
+
         CURLMOPT_LASTENTRY /* the last unused */
     }
 }

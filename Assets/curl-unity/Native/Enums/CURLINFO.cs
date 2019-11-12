@@ -94,6 +94,8 @@ namespace CurlUnity
         REDIRECT_TIME_T = OFF_T + 55,
         APPCONNECT_TIME_T = OFF_T + 56,
 
-        LASTONE = 56
+        RETRY_AFTER = OFF_T + 57,
+
+        LASTONE = 57
     }
 }

@@ -11,6 +11,8 @@
         VERSION_2TLS, /* use version 2 for HTTPS, version 1.1 for HTTP */
         VERSION_2_PRIOR_KNOWLEDGE,  /* please use HTTP 2 without HTTP/1.1
                                            Upgrade */
+        VERSION_3 = 30, /* Makes use of explicit HTTP/3 without fallback.
+                               Use CURLOPT_ALTSVC to enable HTTP/3 upgrade */
 
         VERSION_LAST /* *ILLEGAL* http version */
     }

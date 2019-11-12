@@ -1,5 +1,5 @@
 set PROJ=%CD%
-set CURL_ROOT=%PROJ%\curl-7.64.0
+set CURL_ROOT=%PROJ%\curl-7.67.0
 set BUILD_DIR=%PROJ%\build\win
 set PREBUILT_DIR=%PROJ%\prebuilt\win
 set NGHTTP2_ROOT=%PROJ%\..\nghttp2\prebuilt\win
@@ -27,4 +27,4 @@ cmake %CURL_ROOT% ^
     -DBUILD_SHARED_LIBS=ON
 popd
 
-cmake --build %BUILD_DIR% --config Debug --target install
+cmake --build %BUILD_DIR% --config Release --target install

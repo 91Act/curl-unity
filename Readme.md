@@ -13,8 +13,8 @@ This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) wi
 
 |Name|Version|
 |-|-|
-|curl|7.64.0|
-|nghttp2|1.36.0|
+|curl|7.67.0|
+|nghttp2|1.39.2|
 |openssl|1.1.1b|
 
 # Build

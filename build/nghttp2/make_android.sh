@@ -1,5 +1,5 @@
 PWD=`pwd`
-NGHTTP2_ROOT=$PWD/nghttp2-1.36.0
+NGHTTP2_ROOT=$PWD/nghttp2-1.39.2
 BUILD_DIR_ROOT=$PWD/build/android
 PREBUILT_DIR_ROOT=$PWD/prebuilt/android
 TOOLCHAIN=/usr/local/android-ndk-r16b/build/cmake/android.TOOLCHAIN.cmake

@@ -1,5 +1,5 @@
 PWD=`pwd`
-NGHTTP2_ROOT=$PWD/nghttp2-1.36.0
+NGHTTP2_ROOT=$PWD/nghttp2-1.39.2
 BUILD_DIR=$PWD/build/ios
 PREBUILT_DIR=$PWD/prebuilt/ios
 TOOLCHAIN=$PWD/../cmake/ios.toolchain.cmake
