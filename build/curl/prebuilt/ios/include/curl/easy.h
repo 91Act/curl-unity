@@ -1,5 +1,5 @@
-#ifndef __CURL_EASY_H
-#define __CURL_EASY_H
+#ifndef CURLINC_EASY_H
+#define CURLINC_EASY_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -30,12 +30,6 @@ CURL_EXTERN CURLcode curl_easy_setopt(CURL *curl, CURLoption option, ...);
 CURL_EXTERN CURLcode curl_easy_perform(CURL *curl);
 CURL_EXTERN void curl_easy_cleanup(CURL *curl);
 
-/* !checksrc! disable LONGLINE all */
-CURL_EXTERN CURLcode curl_easy_setopt_str(CURL *curl, CURLoption option, const char *arg);
-CURL_EXTERN CURLcode curl_easy_setopt_int(CURL *curl, CURLoption option, long arg);
-CURL_EXTERN CURLcode curl_easy_setopt_ptr(CURL *curl, CURLoption option, void *arg);
-/* !checksrc! enable LONGLINE */
-
 /*
  * NAME curl_easy_getinfo()
  *
@@ -50,9 +44,7 @@ CURL_EXTERN CURLcode curl_easy_setopt_ptr(CURL *curl, CURLoption option, void *a
  * transfer is completed.
  */
 CURL_EXTERN CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ...);
-/* !checksrc! disable LONGLINE all */
-CURL_EXTERN CURLcode curl_easy_getinfo_ptr(CURL *curl, CURLINFO info, void **arg);
-/* !checksrc! enable LONGLINE */
+
 
 /*
  * NAME curl_easy_duphandle()
