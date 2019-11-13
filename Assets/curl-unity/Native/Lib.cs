@@ -9,13 +9,13 @@ namespace CurlUnity
     public static class Delegates
     {
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate long WriteFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata);
+        public delegate int WriteFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate long HeaderFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata);
+        public delegate int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate long ProgressFunction(IntPtr clientp, long dltotal, long dlnow, long ultotal, long ulnow);
+        public delegate int ProgressFunction(IntPtr clientp, int dltotal, int dlnow, int ultotal, int ulnow);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate long DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, long size, IntPtr userdata);
+        public delegate int DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, int size, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void LockFunction(IntPtr ptr, CURLLOCKDATA data, CURLLOCKACCESS access, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

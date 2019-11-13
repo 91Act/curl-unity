@@ -726,7 +726,7 @@ namespace CurlUnity
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.HeaderFunction))]
-        private static long HeaderFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata)
+        private static int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata)
         {
             size = size * nmemb;
             var thiz = ((GCHandle)userdata).Target as CurlEasy;
@@ -746,7 +746,7 @@ namespace CurlUnity
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.WriteFunction))]
-        private static long WriteFunction(IntPtr ptr, long size, long nmemb, IntPtr userdata)
+        private static int WriteFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata)
         {
             size = size * nmemb;
             var thiz = ((GCHandle)userdata).Target as CurlEasy;
@@ -767,7 +767,7 @@ namespace CurlUnity
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.DebugFunction))]
-        private static long DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, long size, IntPtr userdata)
+        private static int DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, int size, IntPtr userdata)
         {
             if (type == CURLINFODEBUG.HEADER_OUT)
             {
@@ -815,7 +815,7 @@ namespace CurlUnity
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.ProgressFunction))]
-        private static long ProgressFunction(IntPtr clientp, long dltotal, long dlnow, long ultotal, long ulnow)
+        private static int ProgressFunction(IntPtr clientp, int dltotal, int dlnow, int ultotal, int ulnow)
         {
             var thiz = ((GCHandle)clientp).Target as CurlEasy;
             thiz.OnProgress(dltotal, dlnow, ultotal, ulnow);
