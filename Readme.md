@@ -1,6 +1,6 @@
 # curl-unity
 
-This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) with [http2](https://github.com/nghttp2/nghttp2)/[openssl](https://github.com/openssl/openssl) enabled.
+This is a C# wrapper for Unity to use [libcurl](https://github.com/curl/curl) with [http/2](https://github.com/nghttp2/nghttp2) and [openssl](https://github.com/openssl/openssl) enabled.
 
 ## Prebuilt platforms
 
