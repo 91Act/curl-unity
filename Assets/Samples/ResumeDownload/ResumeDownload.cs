@@ -44,7 +44,7 @@ public class ResumeDownload : MonoBehaviour
                     easy.method = "GET";
                     easy.outputPath = m_localPath;
                     easy.rangeStart = m_downloadedBytes;
-                    easy.rangeEnd = contentLength;
+                    easy.rangeEnd = contentLength - 1;
                     easy.progressCallback = (dltotal, dlnow, ultotal, ulnow, _) =>
                     {
                         m_nowBytes = dlnow;
