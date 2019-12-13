@@ -13,7 +13,7 @@ namespace CurlUnity
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int HeaderFunction(IntPtr ptr, int size, int nmemb, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ProgressFunction(IntPtr clientp, int dltotal, int dlnow, int ultotal, int ulnow);
+        public delegate int ProgressFunction(IntPtr clientp, long dltotal, long dlnow, long ultotal, long ulnow);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int DebugFunction(IntPtr ptr, CURLINFODEBUG type, IntPtr data, int size, IntPtr userdata);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
