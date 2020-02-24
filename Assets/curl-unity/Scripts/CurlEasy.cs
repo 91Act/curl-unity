@@ -815,7 +815,7 @@ namespace CurlUnity
         }
 
         [AOT.MonoPInvokeCallback(typeof(Delegates.ProgressFunction))]
-        private static int ProgressFunction(IntPtr clientp, int dltotal, int dlnow, int ultotal, int ulnow)
+        private static int ProgressFunction(IntPtr clientp, long dltotal, long dlnow, long ultotal, long ulnow)
         {
             var thiz = ((GCHandle)clientp).Target as CurlEasy;
             thiz.OnProgress(dltotal, dlnow, ultotal, ulnow);
