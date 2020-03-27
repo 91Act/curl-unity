@@ -31,11 +31,14 @@ namespace CurlUnity
 
         internal void CleanUp()
         {
-            if (multiPtr != IntPtr.Zero)
+            lock (this)
             {
-                if (CurlMultiUpdater.Instance != null) CurlMultiUpdater.Instance.RemoveMulti(this);
-                Lib.curl_multi_cleanup(multiPtr);
-                multiPtr = IntPtr.Zero;
+                if (multiPtr != IntPtr.Zero)
+                {
+                    if (CurlMultiUpdater.Instance != null) CurlMultiUpdater.Instance.RemoveMulti(this);
+                    Lib.curl_multi_cleanup(multiPtr);
+                    multiPtr = IntPtr.Zero;
+                }               
             }
         }
 
@@ -66,13 +69,13 @@ namespace CurlUnity
 
         internal void AddEasy(CurlEasy easy)
         {
-            Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
-            easy.SetOpt(CURLOPT.SHARE, (IntPtr)share);
-
             int workingCount = 0;
 
             lock (this)
             {
+                Lib.curl_multi_add_handle(multiPtr, (IntPtr)easy);
+                easy.SetOpt(CURLOPT.SHARE, (IntPtr)share);
+
                 workingEasies[(IntPtr)easy] = easy;
                 workingCount = workingEasies.Count;
             }
@@ -85,12 +88,11 @@ namespace CurlUnity
 
         internal void RemoveEasy(CurlEasy easy)
         {
-            Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
-
             int workingCount = 0;
 
             lock (this)
             {
+                Lib.curl_multi_remove_handle(multiPtr, (IntPtr)easy);
                 workingEasies.Remove((IntPtr)easy);
                 workingCount = workingEasies.Count;
             }
@@ -105,40 +107,39 @@ namespace CurlUnity
         {
             long running = 0;
 
-            if (multiPtr != IntPtr.Zero)
+            lock (this)
             {
-                Lib.curl_multi_perform(multiPtr, ref running);
-
-                while (true)
+                if (multiPtr != IntPtr.Zero)
                 {
-                    long index = 0;
-                    var msgPtr = Lib.curl_multi_info_read(multiPtr, ref index);
-                    if (msgPtr != IntPtr.Zero)
+                    Lib.curl_multi_perform(multiPtr, ref running);
+
+                    while (true)
                     {
-                        var msg = (CurlMsg)msgPtr;
-                        if (msg.message == CURLMSG.DONE)
+                        long index = 0;
+                        var msgPtr = Lib.curl_multi_info_read(multiPtr, ref index);
+                        if (msgPtr != IntPtr.Zero)
                         {
-                            CurlEasy easy = null;
-
-                            lock (this)
+                            var msg = (CurlMsg)msgPtr;
+                            if (msg.message == CURLMSG.DONE)
                             {
+                                CurlEasy easy = null;
+
                                 workingEasies.TryGetValue(msg.easyPtr, out easy);
-                            }
 
-                            if (easy != null)
-                            {
-                                RemoveEasy(easy);
-                                easy.OnMultiPerform(msg.result, this);
+                                if (easy != null)
+                                {
+                                    RemoveEasy(easy);
+                                    easy.OnMultiPerform(msg.result, this);
+                                }
                             }
                         }
-                    }
-                    else
-                    {
-                        break;
+                        else
+                        {
+                            break;
+                        }
                     }
                 }
-            }
-
+            }           
             return (int)running;
         }
 
