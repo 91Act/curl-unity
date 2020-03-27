@@ -19,6 +19,7 @@ namespace CurlUnity
         public string contentType { get; set; } = "application/text";
         public string outputPath { get; set; }
         public long rangeStart { get; set; } = 0;
+        public long lastDownloadBytes { get; set; } = 0;
         public long rangeEnd { get; set; } = 0;
         public int timeout { get; set; } = 0;
         public int connectionTimeout { get; set; } = 5000;
@@ -285,6 +286,7 @@ namespace CurlUnity
                     else
                     {
                         Thread.Sleep(retryInterval);
+                        PreRetry();
                     }
                 }
 
@@ -359,7 +361,7 @@ namespace CurlUnity
             {
                 new Task(() =>
                 {
-                    progressCallback(dltotal, dlnow, ultotal, ulnow, this);
+                    progressCallback(dltotal + lastDownloadBytes, dlnow + lastDownloadBytes, ultotal, ulnow, this);
                 }).Start(taskScheduler);
             }
         }
@@ -378,6 +380,7 @@ namespace CurlUnity
             else
             {
                 Thread.Sleep(retryInterval);
+                PreRetry();
                 Prepare();
                 multi.AddEasy(this);
             }
@@ -516,6 +519,27 @@ namespace CurlUnity
             catch (Exception e)
             {
                 CurlLog.LogError("Unexpected exception: " + e);
+            }
+        }
+
+        private void PreRetry()
+        {
+            if (!string.IsNullOrEmpty(outputPath))
+            {
+                long downloadedBytes = 0;
+                if (File.Exists(outputPath)) downloadedBytes = (new FileInfo(outputPath)).Length;
+
+                lastDownloadBytes += downloadedBytes - rangeStart;
+
+                if (downloadedBytes > rangeStart)
+                {
+                    rangeStart = downloadedBytes;
+                }
+
+                if (rangeEnd > 0 && downloadedBytes >= rangeEnd)
+                {
+                    rangeStart = rangeEnd;
+                }
             }
         }
 
