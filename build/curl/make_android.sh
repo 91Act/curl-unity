@@ -35,6 +35,7 @@ do_make()
         cd $BUILD_DIR
         cmake $CURL_ROOT \
             -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
+            -DCMAKE_SHARED_LINKER_FLAGS='-s' \
             -DANDROID_ABI=$ABI \
             -DANDROID_TOOLCHAIN_NAME=$NDK_TOOLCHAIN \
             -DANDROID_NATIVE_API_LEVEL=android-21 \
