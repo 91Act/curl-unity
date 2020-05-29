@@ -8,12 +8,14 @@ set OPENSSL_ROOT=%PROJ%\..\openssl\prebuilt\win
 mkdir %BUILD_DIR%
 pushd %BUILD_DIR%
 
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 cmake %CURL_ROOT% ^
     -A x64 ^
     -DCMAKE_INSTALL_PREFIX=%PREBUILT_DIR% ^
     -DCMAKE_USE_OPENSSL=ON ^
+    -DCMAKE_USE_WINSSL=OFF ^
+    -DCURL_WINDOWS_SSPI=OFF ^
     -DOPENSSL_ROOT_DIR=%OPENSSL_ROOT% ^
     -DOPENSSL_INCLUDE_DIR=%OPENSSL_ROOT%\include ^
     -DOPENSSL_CRYPTO_LIBRARY=%OPENSSL_ROOT%\lib\libcrypto.lib ^
