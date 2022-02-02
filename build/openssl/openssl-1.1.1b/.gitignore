@@ -1,6 +1,0 @@
-Makefile
-configdata.pm
-crypto/buildinf.h
-crypto/include/internal/bn_conf.h
-crypto/include/internal/dso_conf.h
-include/openssl/opensslconf.h

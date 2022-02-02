@@ -1,28 +1,25 @@
-PWD=`pwd`
-OPENSSL_VERSION=openssl-1.1.1b
-OPENSSL_ROOT=$PWD/$OPENSSL_VERSION
+#!/usr/bin/env bash
 
-if [ ! -d $OPENSSL_ROOT ]; then    
-    tar xzf ${OPENSSL_ROOT}.tar.gz
-fi
+set -exuo pipefail
 
-do_make()
-{
-    PREBUILT_DIR=`pwd`/prebuilt/linux
+OPENSSL_VERSION=openssl-1.1.1s
+OPENSSL_ROOT="$PWD/$OPENSSL_VERSION"
 
-    (
-        cd $OPENSSL_VERSION
-        CFLAGS="-fvisibility=hidden" \
+PREBUILT_DIR="$PWD/prebuilt/linux"
+
+rm -rf "${PREBUILT_DIR}" && mkdir -p "${PREBUILT_DIR}"
+rm -rf "${OPENSSL_VERSION}" && tar -xf "${OPENSSL_VERSION}.tar.gz"
+
+(
+    cd "$OPENSSL_ROOT"
+    CFLAGS="-fvisibility=hidden" \
         ./Configure linux-x86_64 \
-            --prefix=$PREBUILT_DIR \
-            no-shared no-engine \
-            -fvisibility=hidden
+        --prefix="$PREBUILT_DIR" \
+        no-shared no-engine \
+        -fvisibility=hidden
 
-        make clean
-        make install_dev -j8
-    )
-    
-    mkdir -p $PREBUILT_DIR
-}
+    make clean
+    make install_dev -j8
+)
 
-do_make
+mkdir -p "$PREBUILT_DIR"

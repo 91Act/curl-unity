@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+set -exuo pipefail
+
 for lib in openssl nghttp2 curl; do
     (cd $lib && ./make_linux.sh)
 done

@@ -40,6 +40,9 @@ namespace CurlUnity
         public static extern void curl_slist_free_all(IntPtr arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void curl_free(IntPtr data);
+
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr curl_version();
         #endregion
         #region easy interfaces
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
@@ -75,12 +78,12 @@ namespace CurlUnity
         public static extern CURLE curl_easy_perform(IntPtr easyPtr);
 
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref long arg);
+        public static extern CURLE curl_easy_getinfo(IntPtr easyPtr, CURLINFO info, ref long arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref double arg);
+        public static extern CURLE curl_easy_getinfo(IntPtr easyPtr, CURLINFO info, ref double arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref IntPtr arg);
-        
+        public static extern CURLE curl_easy_getinfo(IntPtr easyPtr, CURLINFO info, ref IntPtr arg);
+
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_easy_escape(IntPtr easyPtr, string data, long length = 0);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]

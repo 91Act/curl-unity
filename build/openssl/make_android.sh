@@ -1,13 +1,12 @@
-PWD=`pwd`
-OPENSSL_VERSION=openssl-1.1.1b
-OPENSSL_ROOT=$PWD/$OPENSSL_VERSION
+#!/usr/bin/env bash
+
+set -exuo pipefail
+
+OPENSSL_VERSION=openssl-1.1.1s
+OPENSSL_ROOT="$PWD/$OPENSSL_VERSION"
 PREBUILT_DIR_ROOT=$PWD/prebuilt/android
 
-export ANDROID_NDK_HOME=/usr/local/android-ndk-r16b
-
-if [ ! -d $OPENSSL_ROOT ]; then    
-    tar xzf ${OPENSSL_ROOT}.tar.gz
-fi
+export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-/usr/local/android-ndk-r16b}"
 
 do_make()
 {
@@ -32,14 +31,17 @@ do_make()
     ;;
     esac
 
-    PREBUILT_DIR=$PREBUILT_DIR_ROOT/$ABI
+    PREBUILT_DIR="$PREBUILT_DIR_ROOT/$ABI"
+
+    rm -rf "${PREBUILT_DIR}" && mkdir -p "${PREBUILT_DIR}"
+    rm -rf "${OPENSSL_VERSION}" && tar -xf "${OPENSSL_VERSION}.tar.gz"
 
     (
-        cd $OPENSSL_ROOT
+        cd "$OPENSSL_ROOT"
 
-        PATH=$ANDROID_NDK_HOME/toolchains/$TOOLCHAIN/prebuilt/darwin-x86_64/bin:$PATH
+        PATH="$ANDROID_NDK_HOME/toolchains/$TOOLCHAIN/prebuilt/darwin-x86_64/bin:$PATH"
 
-        ./Configure $CONF_ARCH --prefix=$PREBUILT_DIR -D__ANDROID_API__=21 no-asm no-shared no-unit-test
+        ./Configure $CONF_ARCH --prefix="$PREBUILT_DIR" -D__ANDROID_API__=21 no-asm no-shared no-unit-test
 
         make clean
         make install_dev -j8

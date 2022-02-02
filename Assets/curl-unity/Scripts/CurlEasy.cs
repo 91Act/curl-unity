@@ -38,7 +38,7 @@ namespace CurlUnity
         public string message { get; private set; }
         public bool running { get; private set; }
         public PerformCallback performCallback { get; set; }
-        public ProgressCallback progressCallback { get; set; } 
+        public ProgressCallback progressCallback { get; set; }
         public bool debug { get; set; }
         public CurlDecoder decoder { get; set; }
 
@@ -144,6 +144,12 @@ namespace CurlUnity
             Lib.curl_global_init((long)CURLGLOBAL.ALL);
         }
 
+        public static string Version()
+        {
+            var ptr = Lib.curl_version();
+            return Marshal.PtrToStringUTF8(ptr);
+        }
+
         public CurlEasy(IntPtr ptr = default)
         {
             taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
@@ -233,20 +239,20 @@ namespace CurlUnity
         public CURLE GetInfo(CURLINFO info, out long value)
         {
             value = 0;
-            return Lib.curl_easy_getinfo_ptr(easyPtr, info, ref value);
+            return Lib.curl_easy_getinfo(easyPtr, info, ref value);
         }
 
         public CURLE GetInfo(CURLINFO info, out double value)
         {
             value = 0;
-            return Lib.curl_easy_getinfo_ptr(easyPtr, info, ref value);
+            return Lib.curl_easy_getinfo(easyPtr, info, ref value);
         }
 
         public CURLE GetInfo(CURLINFO info, out string value)
         {
             value = null;
             IntPtr ptr = IntPtr.Zero;
-            var result = Lib.curl_easy_getinfo_ptr(easyPtr, info, ref ptr);
+            var result = Lib.curl_easy_getinfo(easyPtr, info, ref ptr);
             if (ptr != IntPtr.Zero)
             {
                 value = Marshal.PtrToStringAnsi(ptr);
@@ -258,7 +264,7 @@ namespace CurlUnity
         {
             value = null;
             IntPtr ptr = IntPtr.Zero;
-            var result = Lib.curl_easy_getinfo_ptr(easyPtr, info, ref ptr);
+            var result = Lib.curl_easy_getinfo(easyPtr, info, ref ptr);
             value = new CurlSlist(ptr);
             return result;
         }
@@ -395,7 +401,7 @@ namespace CurlUnity
                 SetOpt(CURLOPT.URL, uri.AbsoluteUri);
 
                 var upperMethod = method.ToUpper();
-                switch(upperMethod)
+                switch (upperMethod)
                 {
                     case "GET":
                         SetOpt(CURLOPT.HTTPGET, true);
@@ -413,7 +419,7 @@ namespace CurlUnity
 
                 SetOpt(CURLOPT.HTTP_VERSION, (long)HTTPVersion.VERSION_2TLS);
                 SetOpt(CURLOPT.PIPEWAIT, true);
-                
+
                 SetOpt(CURLOPT.SSL_VERIFYHOST, !insecure);
                 SetOpt(CURLOPT.SSL_VERIFYPEER, !insecure);
 
