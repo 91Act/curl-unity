@@ -1339,3 +1339,11 @@ CURLcode curl_easy_upkeep(struct Curl_easy *data)
     return CURLE_OK;
   }
 }
+
+/* IL2CPP Compatible */
+/* !checksrc! disable LONGLINE all */
+CURL_EXTERN CURLcode curl_easy_getinfo_ptr(struct Curl_easy *data, CURLINFO info, void **arg)
+{
+  return curl_easy_getinfo(data, info, arg);
+}
+/* !checksrc! enable LONGLINE */
