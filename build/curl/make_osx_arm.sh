@@ -30,7 +30,7 @@ do_make()
             -DCMAKE_USE_LIBSSH2=OFF \
             -DBUILD_TESTING=OFF \
             -DBUILD_SHARED_LIBS=ON \
-            -DCMAKE_OSX_ARCHITECTURES=amd64
+            -DCMAKE_OSX_ARCHITECTURES=arm64
     )
     cmake --build "$BUILD_DIR" --config Release --target install -j8
 }

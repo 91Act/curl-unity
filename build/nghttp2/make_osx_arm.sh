@@ -17,6 +17,6 @@ mkdir -p "$BUILD_DIR"
         -DENABLE_LIB_ONLY=ON \
         -DENABLE_STATIC_LIB=ON \
         -DENABLE_SHARED_LIB=OFF \
-        -DCMAKE_OSX_ARCHITECTURES=amd64
+        -DCMAKE_OSX_ARCHITECTURES=arm64
 )
 cmake --build "$BUILD_DIR" --config Release --target install
