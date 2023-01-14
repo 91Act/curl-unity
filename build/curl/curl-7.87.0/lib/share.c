@@ -260,3 +260,21 @@ Curl_share_unlock(struct Curl_easy *data, curl_lock_data type)
 
   return CURLSHE_OK;
 }
+
+/* IL2CPP Compatible */
+/* !checksrc! disable LONGLINE all */
+CURL_EXTERN CURLSHcode curl_share_setopt_int(CURLSH *share, CURLSHoption option, int arg)
+{
+  return curl_share_setopt(share, option, arg);
+}
+
+CURL_EXTERN CURLSHcode curl_share_setopt_str(CURLSH *share, CURLSHoption option, const char *arg)
+{
+  return curl_share_setopt(share, option, arg);
+}
+
+CURL_EXTERN CURLSHcode curl_share_setopt_ptr(CURLSH *share, CURLSHoption option, void *arg)
+{
+  return curl_share_setopt(share, option, arg);
+}
+/* !checksrc! enable LONGLINE */

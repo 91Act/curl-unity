@@ -3743,3 +3743,25 @@ unsigned int Curl_multi_max_concurrent_streams(struct Curl_multi *multi)
   DEBUGASSERT(multi);
   return multi->max_concurrent_streams;
 }
+
+
+/* IL2CPP Compatible */
+/* !checksrc! disable LONGLINE all */
+CURL_EXTERN CURLMcode curl_multi_setopt_int(CURLM *multi_handle,
+                                        CURLMoption option, int arg)
+{
+  return curl_multi_setopt(multi_handle, option, arg);
+}
+
+CURL_EXTERN CURLMcode curl_multi_setopt_str(CURLM *multi_handle,
+                                        CURLMoption option, const char *arg)
+{
+  return curl_multi_setopt(multi_handle, option, arg);
+}
+
+CURL_EXTERN CURLMcode curl_multi_setopt_ptr(CURLM *multi_handle,
+                                        CURLMoption option, void *arg)
+{
+  return curl_multi_setopt(multi_handle, option, arg);
+}
+/* !checksrc! enable LONGLINE */
