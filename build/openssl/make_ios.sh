@@ -4,7 +4,7 @@ set -exuo pipefail
 
 OPENSSL_VERSION=openssl-1.1.1t
 
-PREBUILT_DIR="$PWD/prebuilt/linux"
+PREBUILT_DIR="$PWD/prebuilt/ios"
 
 rm -rf "${PREBUILT_DIR}" && mkdir -p "${PREBUILT_DIR}"
 rm -rf "${OPENSSL_VERSION}" && tar -xf "${OPENSSL_VERSION}.tar.gz"
