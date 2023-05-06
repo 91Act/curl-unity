@@ -10,6 +10,8 @@ mkdir %BUILD_DIR%
 
 call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
 
+tar -xf %OPENSSL_ROOT%.tar.gz
+
 pushd %OPENSSL_ROOT%
 perl Configure VC-WIN64A --release --prefix=%PREBUILT_DIR% no-asm no-shared no-unit-test
 set CL=/MP
