@@ -7,4 +7,4 @@ for lib in openssl nghttp2 curl; do
 done
 
 mkdir -p ../Assets/curl-unity/Plugins/linux
-cp curl/prebuilt/linux/lib/libcurl.so ../Assets/curl-unity/Plugins/linux
+cp -f curl/prebuilt/linux/lib64/libcurl.so ../Assets/curl-unity/Plugins/linux

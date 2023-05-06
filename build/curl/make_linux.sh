@@ -24,7 +24,7 @@ do_make()
             -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_ROOT/lib/libcrypto.a" \
             -DOPENSSL_SSL_LIBRARY="$OPENSSL_ROOT/lib/libssl.a" \
             -DNGHTTP2_INCLUDE_DIR="$NGHTTP2_ROOT/include" \
-            -DNGHTTP2_LIBRARY="$NGHTTP2_ROOT/lib/libnghttp2.a" \
+            -DNGHTTP2_LIBRARY="$NGHTTP2_ROOT/lib64/libnghttp2.a" \
             -DUSE_NGHTTP2=ON \
             -DHTTP_ONLY=ON \
             -DCURL_USE_LIBSSH2=OFF \
