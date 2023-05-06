@@ -27,7 +27,7 @@ do_make()
             -DNGHTTP2_LIBRARY="$NGHTTP2_ROOT/lib/libnghttp2.a" \
             -DUSE_NGHTTP2=ON \
             -DHTTP_ONLY=ON \
-            -DCMAKE_USE_LIBSSH2=OFF \
+            -DCURL_USE_LIBSSH2=OFF \
             -DBUILD_TESTING=OFF \
             -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_OSX_ARCHITECTURES=x86_64
