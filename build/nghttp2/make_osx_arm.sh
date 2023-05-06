@@ -2,7 +2,7 @@
 
 set -exuo pipefail
 
-NGHTTP2_ROOT="$PWD/nghttp2-1.51.0"
+NGHTTP2_ROOT="$PWD/nghttp2-1.52.0"
 BUILD_DIR="$PWD/build/osx_arm"
 PREBUILT_DIR="$PWD/prebuilt/osx_arm"
 

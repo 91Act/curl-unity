@@ -2,7 +2,7 @@
 
 set -exuo pipefail
 
-OPENSSL_VERSION=openssl-1.1.1s
+OPENSSL_VERSION=openssl-1.1.1t
 
 PREBUILT_DIR="$PWD/prebuilt/linux"
 

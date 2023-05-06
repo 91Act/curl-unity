@@ -2,7 +2,7 @@
 
 set -exuo pipefail
 
-NGHTTP2_ROOT="$PWD/nghttp2-1.51.0"
+NGHTTP2_ROOT="$PWD/nghttp2-1.52.0"
 BUILD_DIR_ROOT="$PWD/build/android"
 PREBUILT_DIR_ROOT="$PWD/prebuilt/android"
 

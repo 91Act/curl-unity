@@ -1,6 +1,6 @@
 set BUILD_DIR=%CD%\build\win
 set PREBUILT_DIR=%CD%\prebuilt\win
-set OPENSSL_ROOT=openssl-1.1.1s
+set OPENSSL_ROOT=openssl-1.1.1t
 
 rd /s /q %BUILD_DIR%
 rd /s /q %PREBUILT_DIR%

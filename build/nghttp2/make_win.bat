@@ -1,4 +1,4 @@
-set NGHTTP2_ROOT=%CD%\nghttp2-1.51.0
+set NGHTTP2_ROOT=%CD%\nghttp2-1.52.0
 set BUILD_DIR=%CD%\build\win
 set PREBUILT_DIR=%CD%\prebuilt\win
 
