@@ -38,10 +38,6 @@ namespace CurlUnity
         UPLOAD_FAILED,           /* 25 - failed upload "command" */
         READ_ERROR,              /* 26 - couldn't open/read from file */
         OUT_OF_MEMORY,           /* 27 */
-                                       /* Note: OUT_OF_MEMORY may sometimes indicate a conversion error
-                                                instead of a memory allocation error if CURL_DOES_CONVERSIONS
-                                                is defined
-                                       */
         OPERATION_TIMEDOUT,      /* 28 - the timeout time was reached */
         OBSOLETE29,              /* 29 - NOT USED */
         FTP_PORT_FAILED,         /* 30 - FTP PORT operation failed */
@@ -63,7 +59,7 @@ namespace CurlUnity
         OBSOLETE46,              /* 46 - NOT USED */
         TOO_MANY_REDIRECTS,      /* 47 - catch endless re-direct loops */
         UNKNOWN_OPTION,          /* 48 - User specified an unknown option */
-        TELNET_OPTION_SYNTAX,    /* 49 - Malformed telnet option */
+        SETOPT_OPTION_SYNTAX,    /* 49 - Malformed setopt option */
         OBSOLETE50,              /* 50 - NOT USED */
         OBSOLETE51,              /* 51 - NOT USED */
         GOT_NOTHING,             /* 52 - when this is a specific error */
@@ -78,7 +74,7 @@ namespace CurlUnity
         PEER_FAILED_VERIFICATION, /* 60 - peer's certificate or fingerprint
                                      wasn't verified fine */
         BAD_CONTENT_ENCODING,    /* 61 - Unrecognized/bad encoding */
-        LDAP_INVALID_URL,        /* 62 - Invalid LDAP URL */
+        OBSOLETE62,              /* 62 - NOT IN USE since 7.82.0 */
         FILESIZE_EXCEEDED,       /* 63 - Maximum file size exceeded */
         USE_SSL_FAILED,          /* 64 - Requested FTP SSL level failed */
         SEND_FAIL_REWIND,        /* 65 - Sending the data requires a rewind
@@ -93,12 +89,8 @@ namespace CurlUnity
         TFTP_UNKNOWNID,          /* 72 - Unknown transfer ID */
         REMOTE_FILE_EXISTS,      /* 73 - File already exists */
         TFTP_NOSUCHUSER,         /* 74 - No such user */
-        CONV_FAILED,             /* 75 - conversion failed */
-        CONV_REQD,               /* 76 - caller must register conversion
-                                    callbacks using curl_easy_setopt options
-                                    CURLOPT_CONV_FROM_NETWORK_FUNCTION,
-                                    CURLOPT_CONV_TO_NETWORK_FUNCTION, and
-                                    CURLOPT_CONV_FROM_UTF8_FUNCTION */
+        OBSOLETE75,              /* 75 - NOT IN USE since 7.82.0 */
+        OBSOLETE76,              /* 76 - NOT IN USE since 7.82.0 */
         SSL_CACERT_BADFILE,      /* 77 - could not load CACERT file, missing
                                     or wrong format */
         REMOTE_FILE_NOT_FOUND,   /* 78 - remote file not found */
@@ -126,11 +118,16 @@ namespace CurlUnity
                                      match */
         SSL_INVALIDCERTSTATUS,   /* 91 - invalid certificate status */
         HTTP2_STREAM,            /* 92 - stream error in HTTP/2 framing layer
-                                    */
+        */
         RECURSIVE_API_CALL,      /* 93 - an api function was called from
                                     inside a callback */
-        URLE_AUTH_ERROR,         /* 94 - an authentication function returned an
+        AUTH_ERROR,              /* 94 - an authentication function returned an
                                     error */
+        HTTP3,                   /* 95 - An HTTP/3 layer problem */
+        QUIC_CONNECT_ERROR,      /* 96 - QUIC connection error */
+        PROXY,                   /* 97 - proxy handshake error */
+        SSL_CLIENTCERT,          /* 98 - client-side certificate required */
+        UNRECOVERABLE_POLL,      /* 99 - poll/select returned fatal error */
         CURL_LAST /* never use! */
     }
 }

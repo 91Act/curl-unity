@@ -4,10 +4,13 @@ namespace CurlUnity
     {
         public const int LONG = 0;
         public const int OBJECTPOINT = 10000;
-        public const int STRINGPOINT = 10000;
-        public const int SLISTPOINT = 10000;
         public const int FUNCTIONPOINT = 20000;
         public const int OFF_T = 30000;
+        public const int BLOB = 40000;
+        public const int STRINGPOINT = OBJECTPOINT;
+        public const int SLISTPOINT = OBJECTPOINT;
+        public const int CBPOINT = OBJECTPOINT;
+        public const int VALUES = LONG;
     }
 
     public enum CURLOPT
@@ -977,6 +980,103 @@ namespace CurlUnity
 
         /* SASL authorisation identity */
         SASL_AUTHZID = CURLOPTTYPE.STRINGPOINT + 289,
+
+
+        /* allow RCPT TO command to fail for some recipients */
+        MAIL_RCPT_ALLLOWFAILS = CURLOPTTYPE.LONG + 290,
+
+        /* the private SSL-certificate as a "blob" */
+        SSLCERT_BLOB = CURLOPTTYPE.BLOB + 291,
+        SSLKEY_BLOB = CURLOPTTYPE.BLOB + 292,
+        PROXY_SSLCERT_BLOB = CURLOPTTYPE.BLOB + 293,
+        PROXY_SSLKEY_BLOB = CURLOPTTYPE.BLOB + 294,
+        ISSUERCERT_BLOB = CURLOPTTYPE.BLOB + 295,
+
+        /* Issuer certificate for proxy */
+        PROXY_ISSUERCERT = CURLOPTTYPE.STRINGPOINT + 296,
+        PROXY_ISSUERCERT_BLOB = CURLOPTTYPE.BLOB + 297,
+
+        /* the EC curves requested by the TLS client (RFC 8422, 5.1);
+         * OpenSSL support via 'set_groups'/'set_curves':
+         * https://www.openssl.org/docs/manmaster/man3/SSL_CTX_set1_groups.html
+         */
+        SSL_EC_CURVES = CURLOPTTYPE.STRINGPOINT + 298,
+
+        /* HSTS bitmask */
+        HSTS_CTRL = CURLOPTTYPE.LONG + 299,
+        /* HSTS file name */
+        HSTS = CURLOPTTYPE.STRINGPOINT + 300,
+
+        /* HSTS read callback */
+        HSTSREADFUNCTION = CURLOPTTYPE.FUNCTIONPOINT + 301,
+        HSTSREADDATA = CURLOPTTYPE.CBPOINT + 302,
+
+        /* HSTS write callback */
+        HSTSWRITEFUNCTION = CURLOPTTYPE.FUNCTIONPOINT + 303,
+        HSTSWRITEDATA = CURLOPTTYPE.CBPOINT + 304,
+
+        /* Parameters for V4 signature */
+        AWS_SIGV4 = CURLOPTTYPE.STRINGPOINT + 305,
+
+        /* Same as CURLOPT_SSL_VERIFYPEER but for DoH (DNS-over-HTTPS) servers. */
+        DOH_SSL_VERIFYPEER = CURLOPTTYPE.LONG + 306,
+
+        /* Same as CURLOPT_SSL_VERIFYHOST but for DoH (DNS-over-HTTPS) servers. */
+        DOH_SSL_VERIFYHOST = CURLOPTTYPE.LONG + 307,
+
+        /* Same as CURLOPT_SSL_VERIFYSTATUS but for DoH (DNS-over-HTTPS) servers. */
+        DOH_SSL_VERIFYSTATUS = CURLOPTTYPE.LONG + 308,
+
+        /* The CA certificates as "blob" used to validate the peer certificate
+           this option is used only if SSL_VERIFYPEER is true */
+        CAINFO_BLOB = CURLOPTTYPE.BLOB + 309,
+
+        /* The CA certificates as "blob" used to validate the proxy certificate
+           this option is used only if PROXY_SSL_VERIFYPEER is true */
+        PROXY_CAINFO_BLOB = CURLOPTTYPE.BLOB + 310,
+
+        /* used by scp/sftp to verify the host's public key */
+        SSH_HOST_PUBLIC_KEY_SHA256 = CURLOPTTYPE.STRINGPOINT + 311,
+
+        /* Function that will be called immediately before the initial request
+           is made on a connection (after any protocol negotiation step).  */
+        PREREQFUNCTION = CURLOPTTYPE.FUNCTIONPOINT + 312,
+
+        /* Data passed to the CURLOPT_PREREQFUNCTION callback */
+        PREREQDATA = CURLOPTTYPE.CBPOINT + 313,
+
+        /* maximum age (since creation) of a connection to consider it for reuse
+         * (in seconds) */
+        MAXLIFETIME_CONN = CURLOPTTYPE.LONG + 314,
+
+        /* Set MIME option flags. */
+        MIME_OPTIONS = CURLOPTTYPE.LONG + 315,
+
+        /* set the SSH host key callback, must point to a curl_sshkeycallback
+           function */
+        SSH_HOSTKEYFUNCTION = CURLOPTTYPE.FUNCTIONPOINT + 316,
+
+        /* set the SSH host key callback custom pointer */
+        SSH_HOSTKEYDATA = CURLOPTTYPE.CBPOINT + 317,
+
+        /* specify which protocols that are allowed to be used for the transfer,
+           which thus helps the app which takes URLs from users or other external
+           inputs and want to restrict what protocol(s) to deal with. Defaults to
+           all built-in protocols. */
+        PROTOCOLS_STR = CURLOPTTYPE.STRINGPOINT + 318,
+
+        /* specify which protocols that libcurl is allowed to follow directs to */
+        REDIR_PROTOCOLS_STR = CURLOPTTYPE.STRINGPOINT + 319,
+
+        /* websockets options */
+        WS_OPTIONS = CURLOPTTYPE.LONG + 320,
+
+        /* CA cache timeout */
+        CA_CACHE_TIMEOUT = CURLOPTTYPE.LONG + 321,
+
+        /* Can leak things, gonna exit() soon */
+        QUICK_EXIT = CURLOPTTYPE.LONG + 322,
+
 
 
         LASTENTRY /* the last unused */
