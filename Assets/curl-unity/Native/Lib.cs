@@ -58,8 +58,6 @@ namespace CurlUnity
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_int(IntPtr easyPtr, CURLOPT option, long arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLE curl_easy_setopt_int(IntPtr easyPtr, CURLOPT option, bool arg);
-        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_str(IntPtr easyPtr, CURLOPT option, string arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, IntPtr arg);
@@ -107,8 +105,6 @@ namespace CurlUnity
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_multi_setopt_int(IntPtr multiPtr, CURLMOPT opt, long value);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr curl_multi_setopt_int(IntPtr multiPtr, CURLMOPT opt, bool value);
-        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_multi_setopt_str(IntPtr multiPtr, CURLMOPT opt, string value);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_multi_setopt_ptr(IntPtr multiPtr, CURLMOPT opt, IntPtr value);
@@ -121,8 +117,6 @@ namespace CurlUnity
         public static extern IntPtr curl_share_init();
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLSH curl_share_setopt_int(IntPtr sharePtr, CURLSHOPT option, long arg);
-        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CURLSH curl_share_setopt_int(IntPtr sharePtr, CURLSHOPT option, bool arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLSH curl_share_setopt_str(IntPtr sharePtr, CURLSHOPT option, string arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]

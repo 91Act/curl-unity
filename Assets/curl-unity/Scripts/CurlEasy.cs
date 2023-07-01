@@ -196,7 +196,7 @@ namespace CurlUnity
 
         public CURLE SetOpt(CURLOPT options, bool value)
         {
-            return Lib.curl_easy_setopt_int(easyPtr, options, value);
+            return Lib.curl_easy_setopt_int(easyPtr, options, value ? 1 : 0);
         }
 
         public CURLE SetOpt(CURLOPT options, string value)

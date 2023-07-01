@@ -43,7 +43,7 @@ namespace CurlUnity
 
         public CURLSH SetOpt(CURLSHOPT options, bool value)
         {
-            return Lib.curl_share_setopt_int(sharePtr, options, value);
+            return Lib.curl_share_setopt_int(sharePtr, options, value ? 1 : 0);
         }
 
         public CURLSH SetOpt(CURLSHOPT options, string value)
