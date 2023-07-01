@@ -60,6 +60,8 @@ namespace CurlUnity
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_str(IntPtr easyPtr, CURLOPT option, string arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, ref CurlBlob arg);
+        [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, IntPtr arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_setopt_ptr(IntPtr easyPtr, CURLOPT option, byte[] arg);
@@ -81,7 +83,7 @@ namespace CurlUnity
         public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref double arg);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern CURLE curl_easy_getinfo_ptr(IntPtr easyPtr, CURLINFO info, ref IntPtr arg);
-        
+
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr curl_easy_escape(IntPtr easyPtr, string data, long length = 0);
         [DllImport(LIB_NAME, CallingConvention = CallingConvention.Cdecl)]
