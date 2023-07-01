@@ -49,7 +49,7 @@ public static class XCodePostProcessSDK
 
     static void AddLibToProject(PBXProject inst, string targetGuid, string lib)
     {
-        string fileGuid = inst.AddFile("usr/lib/" + lib, "Frameworks/" + lib, PBXSourceTree.Sdk);
+        string fileGuid = inst.AddFile("/usr/lib/" + lib, "Frameworks/" + lib, PBXSourceTree.Sdk);
         inst.AddFileToBuild(targetGuid, fileGuid);
     }
 #endif
