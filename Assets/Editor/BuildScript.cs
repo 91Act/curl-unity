@@ -28,7 +28,7 @@ public static class BuildScript
         var scenes = GetBuildSceneList();
         PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.Mono2x);
         PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARMv7;
-        EditorUserBuildSettings.buildAppBundle = true;
+        EditorUserBuildSettings.buildAppBundle = false;
 
         build(new BuildPlayerOptions()
         {
