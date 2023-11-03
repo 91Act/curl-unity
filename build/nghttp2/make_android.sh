@@ -1,8 +1,13 @@
-PWD=`pwd`
-NGHTTP2_ROOT=$PWD/nghttp2-1.39.2
-BUILD_DIR_ROOT=$PWD/build/android
-PREBUILT_DIR_ROOT=$PWD/prebuilt/android
-TOOLCHAIN=/usr/local/android-ndk-r16b/build/cmake/android.TOOLCHAIN.cmake
+#!/usr/bin/env bash
+
+set -exuo pipefail
+
+NGHTTP2_ROOT="$PWD/nghttp2-1.52.0"
+BUILD_DIR_ROOT="$PWD/build/android"
+PREBUILT_DIR_ROOT="$PWD/prebuilt/android"
+
+export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-/usr/local/android-ndk-r16b}"
+TOOLCHAIN="${ANDROID_NDK_HOME}/build/cmake/android.TOOLCHAIN.cmake"
 
 function do_make()
 {
@@ -24,15 +29,18 @@ function do_make()
     ;;
     esac
 
-    BUILD_DIR=$BUILD_DIR_ROOT/$ABI
-    PREBUILT_DIR=$PREBUILT_DIR_ROOT/$ABI
+    BUILD_DIR="$BUILD_DIR_ROOT/$ABI"
+    PREBUILT_DIR="$PREBUILT_DIR_ROOT/$ABI"
 
-    mkdir -p $BUILD_DIR 
+    rm -rf "${BUILD_DIR}" && mkdir -p "${BUILD_DIR}"
+    rm -rf "${PREBUILT_DIR}" && mkdir -p "${PREBUILT_DIR}"
+
+    mkdir -p "$BUILD_DIR"
     (
-        cd $BUILD_DIR
-        cmake $NGHTTP2_ROOT \
-            -DCMAKE_TOOLCHAIN_FILE=$TOOLCHAIN \
-            -DCMAKE_INSTALL_PREFIX=$PREBUILT_DIR \
+        cd "$BUILD_DIR" && \
+        cmake "$NGHTTP2_ROOT" \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DCMAKE_INSTALL_PREFIX="$PREBUILT_DIR" \
             -DANDROID_ABI=$ABI \
             -DANDROID_TOOLCHAIN_NAME=$NDK_TOOLCHAIN \
             -DANDROID_NATIVE_API_LEVEL=android-21 \
@@ -40,7 +48,7 @@ function do_make()
             -DENABLE_STATIC_LIB=ON \
             -DENABLE_SHARED_LIB=OFF
     )
-    cmake --build $BUILD_DIR --config Release --target install
+    cmake --build "$BUILD_DIR" --config Release --target install
 }
 
 do_make arm

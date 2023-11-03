@@ -1,7 +1,11 @@
-set NGHTTP2_ROOT=%CD%\nghttp2-1.39.2
+set NGHTTP2_ROOT=%CD%\nghttp2-1.52.0
 set BUILD_DIR=%CD%\build\win
 set PREBUILT_DIR=%CD%\prebuilt\win
 
+rd /s /q %BUILD_DIR%
+rd /s /q %PREBUILT_DIR%
+
+mkdir %PREBUILT_DIR%
 mkdir %BUILD_DIR% & pushd %BUILD_DIR%
 
 cmake %NGHTTP2_ROOT% ^

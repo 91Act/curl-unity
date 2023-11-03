@@ -1,0 +1,113 @@
+diff --git b/build/curl/curl-7.87.0/include/curl/easy.h a/build/curl/curl-7.87.0/include/curl/easy.h
+index 98ee8888..0540948b 100644
+--- b/build/curl/curl-7.87.0/include/curl/easy.h
++++ a/build/curl/curl-7.87.0/include/curl/easy.h
+@@ -118,6 +118,12 @@ CURL_EXTERN CURLcode curl_easy_send(CURL *curl, const void *buffer,
+  */
+ CURL_EXTERN CURLcode curl_easy_upkeep(CURL *curl);
+ 
++/* !checksrc! disable LONGLINE all */
++CURL_EXTERN CURLcode curl_easy_setopt_str(CURL *curl, CURLoption option, const char *arg);
++CURL_EXTERN CURLcode curl_easy_setopt_int(CURL *curl, CURLoption option, long arg);
++CURL_EXTERN CURLcode curl_easy_setopt_ptr(CURL *curl, CURLoption option, void *arg);
++/* !checksrc! enable LONGLINE */
++
+ #ifdef  __cplusplus
+ } /* end of extern "C" */
+ #endif
+diff --git b/build/curl/curl-7.87.0/lib/easy.c a/build/curl/curl-7.87.0/lib/easy.c
+index d7f93be1..f58968bf 100644
+--- b/build/curl/curl-7.87.0/lib/easy.c
++++ a/build/curl/curl-7.87.0/lib/easy.c
+@@ -1339,3 +1339,11 @@ CURLcode curl_easy_upkeep(struct Curl_easy *data)
+     return CURLE_OK;
+   }
+ }
++
++/* IL2CPP Compatible */
++/* !checksrc! disable LONGLINE all */
++CURL_EXTERN CURLcode curl_easy_getinfo_ptr(struct Curl_easy *data, CURLINFO info, void **arg)
++{
++  return curl_easy_getinfo(data, info, arg);
++}
++/* !checksrc! enable LONGLINE */
+diff --git b/build/curl/curl-7.87.0/lib/multi.c a/build/curl/curl-7.87.0/lib/multi.c
+index b96ee7c7..cd0709a4 100644
+--- b/build/curl/curl-7.87.0/lib/multi.c
++++ a/build/curl/curl-7.87.0/lib/multi.c
+@@ -3743,3 +3743,25 @@ unsigned int Curl_multi_max_concurrent_streams(struct Curl_multi *multi)
+   DEBUGASSERT(multi);
+   return multi->max_concurrent_streams;
+ }
++
++
++/* IL2CPP Compatible */
++/* !checksrc! disable LONGLINE all */
++CURL_EXTERN CURLMcode curl_multi_setopt_int(CURLM *multi_handle,
++                                        CURLMoption option, int arg)
++{
++  return curl_multi_setopt(multi_handle, option, arg);
++}
++
++CURL_EXTERN CURLMcode curl_multi_setopt_str(CURLM *multi_handle,
++                                        CURLMoption option, const char *arg)
++{
++  return curl_multi_setopt(multi_handle, option, arg);
++}
++
++CURL_EXTERN CURLMcode curl_multi_setopt_ptr(CURLM *multi_handle,
++                                        CURLMoption option, void *arg)
++{
++  return curl_multi_setopt(multi_handle, option, arg);
++}
++/* !checksrc! enable LONGLINE */
+diff --git b/build/curl/curl-7.87.0/lib/setopt.c a/build/curl/curl-7.87.0/lib/setopt.c
+index b77e95b4..0ac9c215 100644
+--- b/build/curl/curl-7.87.0/lib/setopt.c
++++ a/build/curl/curl-7.87.0/lib/setopt.c
+@@ -3152,3 +3152,19 @@ CURLcode curl_easy_setopt(struct Curl_easy *data, CURLoption tag, ...)
+   va_end(arg);
+   return result;
+ }
++
++/* IL2CPP Compatible */
++/* !checksrc! disable LONGLINE all */
++CURL_EXTERN CURLcode curl_easy_setopt_str(struct Curl_easy *data, CURLoption tag, const char *arg)
++{
++  return curl_easy_setopt(data, tag, arg);
++}
++CURL_EXTERN CURLcode curl_easy_setopt_int(struct Curl_easy *data, CURLoption tag, long arg)
++{
++  return curl_easy_setopt(data, tag, arg);
++}
++CURL_EXTERN CURLcode curl_easy_setopt_ptr(struct Curl_easy *data, CURLoption tag, void *arg)
++{
++  return curl_easy_setopt(data, tag, arg);
++}
++/* !checksrc! enable LONGLINE */
+diff --git b/build/curl/curl-7.87.0/lib/share.c a/build/curl/curl-7.87.0/lib/share.c
+index 1a083e72..415f8536 100644
+--- b/build/curl/curl-7.87.0/lib/share.c
++++ a/build/curl/curl-7.87.0/lib/share.c
+@@ -260,3 +260,21 @@ Curl_share_unlock(struct Curl_easy *data, curl_lock_data type)
+ 
+   return CURLSHE_OK;
+ }
++
++/* IL2CPP Compatible */
++/* !checksrc! disable LONGLINE all */
++CURL_EXTERN CURLSHcode curl_share_setopt_int(CURLSH *share, CURLSHoption option, int arg)
++{
++  return curl_share_setopt(share, option, arg);
++}
++
++CURL_EXTERN CURLSHcode curl_share_setopt_str(CURLSH *share, CURLSHoption option, const char *arg)
++{
++  return curl_share_setopt(share, option, arg);
++}
++
++CURL_EXTERN CURLSHcode curl_share_setopt_ptr(CURLSH *share, CURLSHoption option, void *arg)
++{
++  return curl_share_setopt(share, option, arg);
++}
++/* !checksrc! enable LONGLINE */

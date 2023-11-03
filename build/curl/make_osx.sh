@@ -1,32 +1,38 @@
-PROJ=`pwd`
-CURL_VERSION=curl-7.67.0
-CURL_ROOT=$PROJ/$CURL_VERSION
+#!/usr/bin/env bash
+
+set -exuo pipefail
+
+CURL_VERSION=curl-7.87.0
+CURL_ROOT="$PWD/$CURL_VERSION"
 
 do_make()
 {
-    BUILD_DIR=$PROJ/build/osx
-    PREBUILT_DIR=$PROJ/prebuilt/osx
-    OPENSSL_ROOT=$PROJ/../openssl/prebuilt/osx
-    NGHTTP2_ROOT=$PROJ/../nghttp2/prebuilt/osx
+    BUILD_DIR="$PWD/build/osx"
+    PREBUILT_DIR="$PWD/prebuilt/osx"
+    OPENSSL_ROOT="$PWD/../openssl/prebuilt/osx"
+    NGHTTP2_ROOT="$PWD/../nghttp2/prebuilt/osx"
 
-    mkdir -p $BUILD_DIR
+    rm -rf "${BUILD_DIR}" && mkdir -p "${BUILD_DIR}"
+    rm -rf "${PREBUILT_DIR}" && mkdir -p "${PREBUILT_DIR}"
+
     (
-        cd $BUILD_DIR
-        cmake $CURL_ROOT \
-            -DCMAKE_INSTALL_PREFIX=$PREBUILT_DIR \
-            -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT \
-            -DOPENSSL_INCLUDE_DIR=$OPENSSL_ROOT/include \
-            -DOPENSSL_CRYPTO_LIBRARY=$OPENSSL_ROOT/lib/libcrypto.a \
-            -DOPENSSL_SSL_LIBRARY=$OPENSSL_ROOT/lib/libssl.a \
-            -DNGHTTP2_INCLUDE_DIR=$NGHTTP2_ROOT/include \
-            -DNGHTTP2_LIBRARY=$NGHTTP2_ROOT/lib/libnghttp2.a \
+        cd "$BUILD_DIR" && \
+        cmake "$CURL_ROOT" \
+            -DCMAKE_INSTALL_PREFIX="$PREBUILT_DIR" \
+            -DOPENSSL_ROOT_DIR="$OPENSSL_ROOT" \
+            -DOPENSSL_INCLUDE_DIR="$OPENSSL_ROOT/include" \
+            -DOPENSSL_CRYPTO_LIBRARY="$OPENSSL_ROOT/lib/libcrypto.a" \
+            -DOPENSSL_SSL_LIBRARY="$OPENSSL_ROOT/lib/libssl.a" \
+            -DNGHTTP2_INCLUDE_DIR="$NGHTTP2_ROOT/include" \
+            -DNGHTTP2_LIBRARY="$NGHTTP2_ROOT/lib/libnghttp2.a" \
             -DUSE_NGHTTP2=ON \
             -DHTTP_ONLY=ON \
-            -DCMAKE_USE_LIBSSH2=OFF \
+            -DCURL_USE_LIBSSH2=OFF \
             -DBUILD_TESTING=OFF \
-            -DBUILD_SHARED_LIBS=ON
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_OSX_ARCHITECTURES=x86_64
     )
-    cmake --build $BUILD_DIR --config Release --target install -j8
+    cmake --build "$BUILD_DIR" --config Release --target install -j8
 }
 
 do_make

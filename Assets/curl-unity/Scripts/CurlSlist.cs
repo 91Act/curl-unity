@@ -47,6 +47,10 @@ namespace CurlUnity
         public void Append(string value)
         {
             ptr = Lib.curl_slist_append(ptr, value);
+            if (ptr == IntPtr.Zero)
+            {
+                throw new CurlException(CURLE.OK, "curl_slist_append");
+            }
         }
 
         public static explicit operator IntPtr(CurlSlist slist)

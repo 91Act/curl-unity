@@ -21,7 +21,9 @@
 **/prebuilt/**/share
 **/prebuilt/**/cmake
 build/**/build
+UserSettings
 Library
 Logs
 obj
 Temp
+out

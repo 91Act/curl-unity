@@ -4,6 +4,7 @@ namespace CurlUnity
     {
         CALL_MULTI_PERFORM = -1, /* please call curl_multi_perform() or
                                     curl_multi_socket*() soon */
+
         OK,
         BAD_HANDLE,      /* the passed-in handle is not a valid CURLM handle */
         BAD_EASY_HANDLE, /* an easy handle was not good/valid */
@@ -15,6 +16,10 @@ namespace CurlUnity
                             attempted to get added - again */
         RECURSIVE_API_CALL, /* an api function was called from inside a
                                callback */
+        WAKEUP_FAILURE,  /* wakeup is unavailable or failed */
+        BAD_FUNCTION_ARGUMENT, /* function called with a bad parameter */
+        ABORTED_BY_CALLBACK,
+        UNRECOVERABLE_POLL,
         LAST
     }
 }

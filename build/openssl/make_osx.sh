@@ -1,20 +1,16 @@
-OPEN_SSL_VERSION=openssl-1.1.1b
+#!/usr/bin/env bash
 
-if [ ! -d $OPEN_SSL_VERSION ]; then    
-    tar xzf ${OPEN_SSL_VERSION}.tar.gz
-fi
+set -exuo pipefail
 
-do_make()
-{
-    PREBUILT_DIR=`pwd`/prebuilt/osx
-    (
-        cd $OPEN_SSL_VERSION
-        ./Configure darwin64-x86_64-cc --prefix=$PREBUILT_DIR no-asm no-shared no-unit-test
+OPENSSL_VERSION=openssl-1.1.1t
 
-        make clean
-        make install_dev -j8
-    )
-}
+PREBUILT_DIR="$PWD/prebuilt/osx"
 
-do_make
+rm -rf "${PREBUILT_DIR}" && mkdir -p "${PREBUILT_DIR}"
+rm -rf "${OPENSSL_VERSION}" && tar -xf "${OPENSSL_VERSION}.tar.gz"
 
+cd "$OPENSSL_VERSION" || exit 1
+./Configure darwin64-x86_64-cc --prefix="$PREBUILT_DIR" no-asm no-shared no-unit-test
+
+make clean
+make install_dev -j8

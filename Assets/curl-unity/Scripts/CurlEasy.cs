@@ -1,14 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEngine;
 
 namespace CurlUnity
 {
+    public class CurlException : Exception
+    {
+        public string reason;
+        public CURLE error;
+
+        public CurlException(CURLE error, string reason) : base($"{reason}: {error}")
+        {
+            this.error = error;
+            this.reason = reason;
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct CurlBlob
+    {
+        public IntPtr data;
+        public UIntPtr len;
+        public uint flags;
+    }
+
     public class CurlEasy : IDisposable
     {
         public delegate void PerformCallback(CURLE result, CurlEasy easy);
@@ -38,9 +59,10 @@ namespace CurlUnity
         public string message { get; private set; }
         public bool running { get; private set; }
         public PerformCallback performCallback { get; set; }
-        public ProgressCallback progressCallback { get; set; } 
+        public ProgressCallback progressCallback { get; set; }
         public bool debug { get; set; }
         public CurlDecoder decoder { get; set; }
+        public Exception exception { get; set; }
 
         public string outText
         {
@@ -103,6 +125,7 @@ namespace CurlUnity
             }
         }
 
+        [Serializable]
         public class HeaderDict : Dictionary<string, string>
         {
             public HeaderDict()
@@ -130,24 +153,36 @@ namespace CurlUnity
             return buffer;
         }
 #endif
-        private TaskScheduler taskScheduler;
 
-        private static string s_capath;
+        static readonly CurlBlob cacert;
 
         static CurlEasy()
         {
-            s_capath = Path.Combine(Application.persistentDataPath, "cacert");
-            if (!File.Exists(s_capath))
+            var res = Lib.curl_global_init((long)CURLGLOBAL.ALL);
+            if (res != CURLE.OK)
             {
-                File.WriteAllBytes(s_capath, Resources.Load<TextAsset>("cacert").bytes);
+                throw new CurlException(res, "curl_global_init");
             }
-            Lib.curl_global_init((long)CURLGLOBAL.ALL);
+            var CACERT = CurlCA.CACERT;
+            var cacertptr = Marshal.AllocHGlobal(CACERT.Length);
+            Marshal.Copy(CACERT, 0, cacertptr, CACERT.Length);
+
+            cacert = new CurlBlob
+            {
+                data = cacertptr,
+                len = (UIntPtr)CACERT.Length,
+                flags = 0,
+            };
+        }
+
+        public static string Version()
+        {
+            var ptr = Lib.curl_version();
+            return Marshal.PtrToStringUTF8(ptr);
         }
 
         public CurlEasy(IntPtr ptr = default)
         {
-            taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
             if (ptr != IntPtr.Zero)
             {
                 easyPtr = ptr;
@@ -155,6 +190,11 @@ namespace CurlUnity
             else
             {
                 easyPtr = Lib.curl_easy_init();
+            }
+
+            if (easyPtr == IntPtr.Zero)
+            {
+                throw new CurlException(CURLE.OK, "curl_easy_init");
             }
         }
 
@@ -183,49 +223,63 @@ namespace CurlUnity
         }
 
         #region SetOpt
+        private static CURLE CK(CURLE code, CURLOPT options, object value)
+        {
+            if (code != CURLE.OK)
+            {
+                throw new CurlException(code, $"curl_easy_setopt({options}, {value})");
+            }
+            return code;
+        }
+
         public CURLE SetOpt(CURLOPT options, long value)
         {
-            return Lib.curl_easy_setopt_int(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_int(easyPtr, options, value), options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, bool value)
         {
-            return Lib.curl_easy_setopt_int(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_int(easyPtr, options, value ? 1 : 0), options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, string value)
         {
-            return Lib.curl_easy_setopt_str(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_str(easyPtr, options, value), options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, IntPtr value)
         {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_ptr(easyPtr, options, value), options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, byte[] value)
         {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_ptr(easyPtr, options, value), options, value);
+        }
+
+        public CURLE SetOpt(CURLOPT options, CurlBlob blob)
+        {
+            return CK(Lib.curl_easy_setopt_ptr(easyPtr, options, ref blob), options, blob);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.WriteFunction value)
         {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_ptr(easyPtr, options, value), options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.HeaderFunction value)
         {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_ptr(easyPtr, options, value), options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.DebugFunction value)
         {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_ptr(easyPtr, options, value), options, value);
         }
 
         public CURLE SetOpt(CURLOPT options, Delegates.ProgressFunction value)
         {
-            return Lib.curl_easy_setopt_ptr(easyPtr, options, value);
+            return CK(Lib.curl_easy_setopt_ptr(easyPtr, options, value), options, value);
         }
 
         #endregion
@@ -298,6 +352,8 @@ namespace CurlUnity
             return result;
         }
 
+        private readonly HttpClient client = new HttpClient();
+
         public async Task<CURLE> PerformAsync()
         {
             return await Task.Run(Perform);
@@ -340,27 +396,17 @@ namespace CurlUnity
         {
             if (performCallback != null)
             {
-                new Task(() =>
-                {
-                    performCallback(result, this);
-                    performCallback = null;
-                    running = false;
-                }).Start(taskScheduler);
+                performCallback(result, this);
+                performCallback = null;
             }
-            else
-            {
-                running = false;
-            }
+            running = false;
         }
 
         private void OnProgress(long dltotal, long dlnow, long ultotal, long ulnow)
         {
             if (progressCallback != null)
             {
-                new Task(() =>
-                {
-                    progressCallback(dltotal, dlnow, ultotal, ulnow, this);
-                }).Start(taskScheduler);
+                progressCallback(dltotal, dlnow, ultotal, ulnow, this);
             }
         }
 
@@ -395,7 +441,7 @@ namespace CurlUnity
                 SetOpt(CURLOPT.URL, uri.AbsoluteUri);
 
                 var upperMethod = method.ToUpper();
-                switch(upperMethod)
+                switch (upperMethod)
                 {
                     case "GET":
                         SetOpt(CURLOPT.HTTPGET, true);
@@ -413,12 +459,12 @@ namespace CurlUnity
 
                 SetOpt(CURLOPT.HTTP_VERSION, (long)HTTPVersion.VERSION_2TLS);
                 SetOpt(CURLOPT.PIPEWAIT, true);
-                
+
                 SetOpt(CURLOPT.SSL_VERIFYHOST, !insecure);
                 SetOpt(CURLOPT.SSL_VERIFYPEER, !insecure);
 
                 // Ca cert path
-                SetOpt(CURLOPT.CAINFO, s_capath);
+                SetOpt(CURLOPT.CAINFO_BLOB, cacert);
 
                 // Fill request header
                 var requestHeader = new CurlSlist(IntPtr.Zero);
@@ -580,7 +626,14 @@ namespace CurlUnity
                     var ms = responseBodyStream as MemoryStream;
                     if (ms != null)
                     {
-                        inData = ms.ToArray();
+                        if (inHeader.TryGetValue("Content-Encoding", out string contentEncoding))
+                        {
+                            inData = DecompressContentStream(ms, contentEncoding);
+                        }
+                        else
+                        {
+                            inData = ms.ToArray();
+                        }
                     }
 
                     if (status / 100 == 3)
@@ -615,8 +668,38 @@ namespace CurlUnity
             return done;
         }
 
+        private byte[] DecompressContentStream(MemoryStream contentStream, string contentEncoding)
+        {
+            contentStream.Seek(0, SeekOrigin.Begin);
+
+            if (contentEncoding == "gzip")
+            {
+                // https://stackoverflow.com/a/39157149/3553314
+                using (var decompressionStream = new GZipStream(contentStream, CompressionMode.Decompress))
+                using (var outputStream = new MemoryStream())
+                {
+                    decompressionStream.CopyTo(outputStream);
+                    return outputStream.ToArray();
+                }
+            }
+            else if (contentEncoding == "")
+            {
+                return contentStream.ToArray();
+            }
+            else
+            {
+                CurlLog.LogError($"Not supported Content-Encoding: {contentEncoding}");
+                return contentStream.ToArray();
+            }
+        }
+
         private void Dump()
         {
+            if (!debug)
+            {
+                return;
+            }
+
             try
             {
                 var sb = new StringBuilder();
@@ -635,7 +718,10 @@ namespace CurlUnity
                 {
                     sb.AppendLine($"<color={((status >= 200 && status <= 299) ? "green" : "red")}><b>[{method.ToUpper()}]</b></color> {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
                 }
-                else sb.AppendLine($"[{method.ToUpper()}] {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
+                else
+                {
+                    sb.AppendLine($"[{method.ToUpper()}] {effectiveUrl}({ip}) [{httpVersion} {status} {message}] [{outDataLength}({(outData != null ? outData.Length : 0)}) | {inDataLength}({(inData != null ? inData.Length : 0)}) | {time * 1000} ms]");
+                }
 
                 if (debug)
                 {
